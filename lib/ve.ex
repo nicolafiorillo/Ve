@@ -6,12 +6,16 @@ defmodule Ve do
   @doc false
   def validate(data, schema) when is_list(schema) do
     messages = []
-    pattern = find_pattern_value(schema)
-
+    pattern_value = find_value(:pattern, schema)
+    max_value = find_value(:max, schema)
+    min_value = find_value(:min, schema)
+    
     messages
       |> validate_nullable(:nullable in schema, data)
       |> validate_as_type(schema, data)
-      |> validate_string_pattern(pattern, data)
+      |> validate_string_pattern(pattern_value, data)
+      |> validate_integer_max(max_value, data)
+      |> validate_integer_min(min_value, data)
       |> result(data)
   end
 
@@ -30,14 +34,24 @@ defmodule Ve do
     messages ++ messages_on_types
   end
 
-  defp find_pattern_value(schema) do
+  defp find_value(key, schema) do
     Enum.find_value(schema, nil, fn k ->
       case k do
-        {:pattern, d} -> d
+        {^key, d} -> d
         _ -> false
       end
     end)
   end
+
+  defp validate_integer_min(messages, nil, _), do: messages
+  defp validate_integer_min(messages, _, nil), do: messages
+  defp validate_integer_min(messages, min_value, data) when min_value <= data, do: messages
+  defp validate_integer_min(messages, _, _), do: messages ++ ["min_violation"]
+  
+  defp validate_integer_max(messages, nil, _), do: messages
+  defp validate_integer_max(messages, _, nil), do: messages
+  defp validate_integer_max(messages, max_value, data) when max_value >= data, do: messages
+  defp validate_integer_max(messages, _, _), do: messages ++ ["max_violation"]
 
   defp validate_string_pattern(messages, nil, _), do: messages
   defp validate_string_pattern(messages, _, nil), do: messages
@@ -47,7 +61,6 @@ defmodule Ve do
       else
         {:error, {msg, _}} -> messages ++ ["invalid_regex_pattern: #{msg}"]
         false              -> messages ++ ["pattern_not_matched"]
-
     end
   end
   

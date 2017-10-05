@@ -53,4 +53,20 @@ defmodule VeTest do
   test "apply invalid pattern to string" do
     assert Ve.validate("some data", [:is_string, pattern: "("]) == {:error, ["invalid_regex_pattern: missing )"]}
   end
+
+  test "min integer" do
+    assert Ve.validate(5, [:is_integer, min: 4]) == {:ok, 5}
+  end
+
+  test "min integer violated" do
+    assert Ve.validate(5, [:is_integer, min: 6]) == {:error, ["min_violation"]}
+  end
+
+  test "max integer" do
+    assert Ve.validate(5, [:is_integer, max: 6]) == {:ok, 5}
+  end
+
+  test "max integer violated" do
+    assert Ve.validate(5, [:is_integer, max: 4]) == {:error, ["max_violation"]}
+  end
 end
