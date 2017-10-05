@@ -5,18 +5,32 @@ defmodule Ve do
 
   @doc false
   def validate(data, schema) when is_list(schema) do
-    case schema |> get_type() do
-      :is_string  -> [] |> validate_as_string(data)
-      :is_integer -> [] |> validate_as_integer(data)
-      :is_atom    -> [] |> validate_as_atom(data)
-      :is_list    -> [] |> validate_as_list(data)
-      :is_map     -> [] |> validate_as_map(data)
-      :is_tuple   -> [] |> validate_as_tuple(data)
-      _           -> ["unknown_type"]
-    end
-    |> result(data)
+    messages = []
+
+    messages
+      |> validate_nullable(:nullable in schema, data)
+      |> validate_as_type(schema, data)
+      |> result(data)
   end
 
+  defp validate_as_type(messages, schema, data) do
+    messages_on_types = 
+      case schema |> get_type() do
+        :is_string  -> validate_data_as_type(data, "string", &Kernel.is_bitstring/1)
+        :is_integer -> validate_data_as_type(data, "integer", &Kernel.is_integer/1)
+        :is_atom    -> validate_data_as_type(data, "atom", &Kernel.is_atom/1)
+        :is_list    -> validate_data_as_type(data, "list", &Kernel.is_list/1)
+        :is_map     -> validate_data_as_type(data, "map", &Kernel.is_map/1)
+        :is_tuple   -> validate_data_as_type(data, "tuple", &Kernel.is_tuple/1)
+        _           -> ["unknown_type"]
+      end
+
+    messages ++ messages_on_types
+  end
+
+  defp validate_nullable(messages, false, nil), do: messages ++ ["cannot_be_nullable"]
+  defp validate_nullable(messages, _, _), do: messages
+    
   defp result([], data), do: {:ok, data}
   defp result(messages, _), do: {:error, messages}
 
@@ -27,21 +41,6 @@ defmodule Ve do
   defp choose_type(true, val, _), do: val
   defp choose_type(false, _, val), do: val
 
-  defp validate_as_string(messages, data) when is_bitstring(data), do: messages
-  defp validate_as_string(messages, data), do: messages ++ ["#{data}_is_not_string"]
-
-  defp validate_as_integer(messages, data) when is_integer(data), do: messages
-  defp validate_as_integer(messages, data), do: messages ++ ["#{data}_is_not_integer"]
-
-  defp validate_as_atom(messages, data) when is_atom(data), do: messages
-  defp validate_as_atom(messages, data), do: messages ++ ["#{data}_is_not_atom"]
-
-  defp validate_as_list(messages, data) when is_list(data), do: messages
-  defp validate_as_list(messages, data), do: messages ++ ["#{data}_is_not_list"]
-
-  defp validate_as_map(messages, data) when is_map(data), do: messages
-  defp validate_as_map(messages, data), do: messages ++ ["#{data}_is_not_map"]
-
-  defp validate_as_tuple(messages, data) when is_tuple(data), do: messages
-  defp validate_as_tuple(messages, data), do: messages ++ ["#{data}_is_not_tuple"]
+  defp validate_data_as_type(nil, _, _), do: []
+  defp validate_data_as_type(data, name, validation_func), do: if validation_func.(data), do: [], else: ["#{data}_is_not_#{name}"]
 end

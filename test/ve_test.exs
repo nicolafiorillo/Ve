@@ -26,6 +26,16 @@ defmodule VeTest do
 
       assert Ve.validate(data, [type]) == {:error, [data_message]}
     end
+
+    test "type #{name} is valid but nullable" do
+      type = unquote(type)
+      assert Ve.validate(nil, [type, :nullable]) == {:ok, nil }
+    end
+
+    test "type #{name} is nil but not nullable" do
+      type = unquote(type)
+      assert Ve.validate(nil, [type]) == {:error, ["cannot_be_nullable"]}
+    end
   end
 
   test "unknown type" do
