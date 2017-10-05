@@ -82,4 +82,9 @@ defmodule VeTest do
   test "map contains a field with invalid type" do
     assert Ve.validate(%{field: "field"}, [:is_map, fields: [field: [:is_integer]]]) == {:error, ["field_is_not_integer"]}
   end
+
+  test "map contains some fields with invalid type" do
+    schema = [:is_map, fields: [name: [:is_string], surname: [:is_string]]]
+    assert Ve.validate(%{name: 52, surname: 54}, schema) == {:error, ["52_is_not_string", "54_is_not_string"]}
+  end
 end

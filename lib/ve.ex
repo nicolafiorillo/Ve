@@ -74,10 +74,10 @@ defmodule Ve do
   defp validate_fields(messages, nil, _), do: messages
   defp validate_fields(messages, _, nil), do: messages
   defp validate_fields(messages, fields, data) do
-    Enum.reduce(fields, messages, fn {field, schema}, messages -> 
+    Enum.reduce(fields, messages, fn {field, schema}, messages ->
       case Map.get(data, field) do
         nil  -> messages ++ ["missing_field_#{field}"]
-        data -> messages ++ internal_validate(messages, data, schema)
+        data -> internal_validate(messages, data, schema)
       end
     end)
   end
