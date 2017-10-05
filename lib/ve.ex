@@ -1,7 +1,7 @@
 defmodule Ve do
   @moduledoc false
 
-  @well_known_types [:is_string, :is_integer, :is_atom, :is_map, :is_list, :is_tuple]
+  @well_known_types [:is_string, :is_integer, :is_atom, :is_map, :is_list, :is_tuple, :is_boolean]
 
   @doc false
   def validate(data, schema) when is_list(schema) do
@@ -28,6 +28,7 @@ defmodule Ve do
         :is_list    -> validate_data_as_type(data, "list", &Kernel.is_list/1)
         :is_map     -> validate_data_as_type(data, "map", &Kernel.is_map/1)
         :is_tuple   -> validate_data_as_type(data, "tuple", &Kernel.is_tuple/1)
+        :is_boolean -> validate_data_as_type(data, "boolean", &Kernel.is_boolean/1)
         _           -> ["unknown_type"]
       end
 

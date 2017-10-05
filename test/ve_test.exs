@@ -9,6 +9,7 @@ defmodule VeTest do
     {"list", :is_list, valid: [51, 52], invalid: {"test", "test_is_not_list"}},
     {"map", :is_map, valid: %{}, invalid: {"test", "test_is_not_map"}},
     {"tuple", :is_tuple, valid: {}, invalid: {"test", "test_is_not_tuple"}},
+    {"boolean", :is_boolean, valid: true, invalid: {"test", "test_is_not_boolean"}},
   ]
 
   Enum.each valid_types, fn {name, type, [valid: valid_data, invalid: {invalid_data, invalid_data_message}]} ->
