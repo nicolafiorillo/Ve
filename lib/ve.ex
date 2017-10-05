@@ -6,10 +6,12 @@ defmodule Ve do
   @doc false
   def validate(data, schema) when is_list(schema) do
     messages = []
+    pattern = find_pattern_value(schema)
 
     messages
       |> validate_nullable(:nullable in schema, data)
       |> validate_as_type(schema, data)
+      |> validate_string_pattern(pattern, data)
       |> result(data)
   end
 
@@ -28,6 +30,27 @@ defmodule Ve do
     messages ++ messages_on_types
   end
 
+  defp find_pattern_value(schema) do
+    Enum.find_value(schema, nil, fn k ->
+      case k do
+        {:pattern, d} -> d
+        _ -> false
+      end
+    end)
+  end
+
+  defp validate_string_pattern(messages, nil, _), do: messages
+  defp validate_string_pattern(messages, _, nil), do: messages
+  defp validate_string_pattern(messages, pattern, data) do
+    with {:ok, r} <- Regex.compile(pattern),
+         true      <- Regex.match?(r, data) do messages
+      else
+        {:error, {msg, _}} -> messages ++ ["invalid_regex_pattern: #{msg}"]
+        false              -> messages ++ ["pattern_not_matched"]
+
+    end
+  end
+  
   defp validate_nullable(messages, false, nil), do: messages ++ ["cannot_be_nullable"]
   defp validate_nullable(messages, _, _), do: messages
     

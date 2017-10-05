@@ -41,4 +41,16 @@ defmodule VeTest do
   test "unknown type" do
     assert Ve.validate("some data", []) == {:error, ["unknown_type"]}
   end
+
+  test "apply pattern to string" do
+    assert Ve.validate("some data", [:is_string, pattern: "data"]) == {:ok, "some data"}
+  end
+
+  test "apply pattern to invalid string" do
+    assert Ve.validate("some doto", [:is_string, pattern: "data"]) == {:error, ["pattern_not_matched"]}
+  end
+
+  test "apply invalid pattern to string" do
+    assert Ve.validate("some data", [:is_string, pattern: "("]) == {:error, ["invalid_regex_pattern: missing )"]}
+  end
 end
