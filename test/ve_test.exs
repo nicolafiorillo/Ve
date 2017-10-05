@@ -70,4 +70,16 @@ defmodule VeTest do
   test "max integer violated" do
     assert Ve.validate(5, [:is_integer, max: 4]) == {:error, ["max_violation"]}
   end
+
+  test "missing field in map" do
+    assert Ve.validate(%{}, [:is_map, fields: [name: [:is_string]]]) == {:error, ["missing_field_name"]}
+  end
+
+  test "map contains a field" do
+    assert Ve.validate(%{field: "field"}, [:is_map, fields: [field: [:is_string]]]) == {:ok, %{field: "field"}}
+  end
+
+  test "map contains a field with invalid type" do
+    assert Ve.validate(%{field: "field"}, [:is_map, fields: [field: [:is_integer]]]) == {:error, ["field_is_not_integer"]}
+  end
 end

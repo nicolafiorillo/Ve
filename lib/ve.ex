@@ -4,11 +4,17 @@ defmodule Ve do
   @well_known_types [:is_string, :is_integer, :is_atom, :is_map, :is_list, :is_tuple, :is_boolean]
 
   @doc false
-  def validate(data, schema) when is_list(schema) do
-    messages = []
+  def validate(data, schema) when is_list(schema) when is_list(schema) do
+    []
+    |> internal_validate(data, schema)
+    |> result(data)
+  end
+
+  defp internal_validate(messages, data, schema) do
     pattern_value = find_value(:pattern, schema)
     max_value = find_value(:max, schema)
     min_value = find_value(:min, schema)
+    fields_value = find_value(:fields, schema)
     
     messages
       |> validate_nullable(:nullable in schema, data)
@@ -16,8 +22,8 @@ defmodule Ve do
       |> validate_string_pattern(pattern_value, data)
       |> validate_integer_max(max_value, data)
       |> validate_integer_min(min_value, data)
-      |> result(data)
-  end
+      |> validate_fields(fields_value, data)
+    end
 
   defp validate_as_type(messages, schema, data) do
     messages_on_types = 
@@ -65,6 +71,17 @@ defmodule Ve do
     end
   end
   
+  defp validate_fields(messages, nil, _), do: messages
+  defp validate_fields(messages, _, nil), do: messages
+  defp validate_fields(messages, fields, data) do
+    Enum.reduce(fields, messages, fn {field, schema}, messages -> 
+      case Map.get(data, field) do
+        nil  -> messages ++ ["missing_field_#{field}"]
+        data -> messages ++ internal_validate(messages, data, schema)
+      end
+    end)
+  end
+
   defp validate_nullable(messages, false, nil), do: messages ++ ["cannot_be_nullable"]
   defp validate_nullable(messages, _, _), do: messages
     
