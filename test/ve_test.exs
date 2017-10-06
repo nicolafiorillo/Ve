@@ -87,4 +87,14 @@ defmodule VeTest do
     schema = [:is_map, fields: [name: [:is_string], surname: [:is_string]]]
     assert Ve.validate(%{name: 52, surname: 54}, schema) == {:error, ["52_is_not_string", "54_is_not_string"]}
   end
+
+  test "map contains an invalid field and a missing field" do
+    schema = [:is_map, fields: [name: [:is_string], surname: [:is_string]]]
+    assert Ve.validate(%{name: 52}, schema) == {:error, ["52_is_not_string", "missing_field_surname"]}
+  end
+
+  test "map contains some optional fields" do
+    schema = [:is_map, fields: [name: [:is_string], surname: [:is_string, :optional]]]
+    assert Ve.validate(%{name: "f1"}, schema) == {:ok, %{name: "f1"}}
+  end
 end
