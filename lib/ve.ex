@@ -63,12 +63,17 @@ defmodule Ve do
   defp validate_string_pattern(messages, nil, _), do: messages
   defp validate_string_pattern(messages, _, nil), do: messages
   defp validate_string_pattern(messages, pattern, data) do
-    with {:ok, r} <- Regex.compile(pattern),
-         true      <- Regex.match?(r, data) do messages
-      else
-        {:error, {msg, _}} -> messages ++ ["invalid_regex_pattern: #{msg}"]
-        false              -> messages ++ ["pattern_not_matched"]
+    case Regex.match?(pattern, data) do
+      false -> messages ++ ["pattern_not_matched"]
+      _     -> messages
     end
+
+    # with {:ok, r} <- Regex.compile(pattern),
+    #      true      <- Regex.match?(r, data) do messages
+    #   else
+    #     {:error, {msg, _}} -> messages ++ ["invalid_regex_pattern: #{msg}"]
+    #     false              -> messages ++ ["pattern_not_matched"]
+    # end
   end
   
   defp validate_fields(messages, nil, _), do: messages

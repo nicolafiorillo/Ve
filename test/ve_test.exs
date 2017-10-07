@@ -44,15 +44,11 @@ defmodule VeTest do
   end
 
   test "apply pattern to string" do
-    assert Ve.validate("some data", [:is_string, pattern: "data"]) == {:ok, "some data"}
+    assert Ve.validate("some data", [:is_string, pattern: ~r/data/]) == {:ok, "some data"}
   end
 
   test "apply pattern to invalid string" do
-    assert Ve.validate("some doto", [:is_string, pattern: "data"]) == {:error, ["pattern_not_matched"]}
-  end
-
-  test "apply invalid pattern to string" do
-    assert Ve.validate("some data", [:is_string, pattern: "("]) == {:error, ["invalid_regex_pattern: missing )"]}
+    assert Ve.validate("some doto", [:is_string, pattern: ~r/data/]) == {:error, ["pattern_not_matched"]}
   end
 
   test "min integer" do
