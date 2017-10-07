@@ -3,13 +3,13 @@ defmodule VeTest do
   doctest Ve
 
   valid_types = [
-    {"string", :is_string, valid: "test", invalid: {51, "51_is_not_string"}},
-    {"integer", :is_integer, valid: 51, invalid: {"test", "test_is_not_integer"}},
-    {"atom", :is_atom, valid: :my_atom, invalid: {"test", "test_is_not_atom"}},
-    {"list", :is_list, valid: [51, 52], invalid: {"test", "test_is_not_list"}},
-    {"map", :is_map, valid: %{}, invalid: {"test", "test_is_not_map"}},
-    {"tuple", :is_tuple, valid: {}, invalid: {"test", "test_is_not_tuple"}},
-    {"boolean", :is_boolean, valid: true, invalid: {"test", "test_is_not_boolean"}},
+    {"string", :is_string, valid: "test", invalid: {51, "string_expected_got_integer"}},
+    {"integer", :is_integer, valid: 51, invalid: {"test", "integer_expected_got_bitstring"}},
+    {"atom", :is_atom, valid: :my_atom, invalid: {"test", "atom_expected_got_bitstring"}},
+    {"list", :is_list, valid: [51, 52], invalid: {"test", "list_expected_got_bitstring"}},
+    {"map", :is_map, valid: %{}, invalid: {"test", "map_expected_got_bitstring"}},
+    {"tuple", :is_tuple, valid: {}, invalid: {"test", "tuple_expected_got_bitstring"}},
+    {"boolean", :is_boolean, valid: true, invalid: {"test", "boolean_expected_got_bitstring"}},
   ]
 
   Enum.each valid_types, fn {name, type, [valid: valid_data, invalid: {invalid_data, invalid_data_message}]} ->
@@ -76,21 +76,26 @@ defmodule VeTest do
   end
 
   test "map contains a field with invalid type" do
-    assert Ve.validate(%{field: "field"}, [:is_map, fields: [field: [:is_integer]]]) == {:error, ["field_is_not_integer"]}
+    assert Ve.validate(%{field: "field"}, [:is_map, fields: [field: [:is_integer]]]) == {:error, ["integer_expected_got_bitstring"]}
   end
 
   test "map contains some fields with invalid type" do
     schema = [:is_map, fields: [name: [:is_string], surname: [:is_string]]]
-    assert Ve.validate(%{name: 52, surname: 54}, schema) == {:error, ["52_is_not_string", "54_is_not_string"]}
+    assert Ve.validate(%{name: 52, surname: 54}, schema) == {:error, ["string_expected_got_integer", "string_expected_got_integer"]}
   end
 
   test "map contains an invalid field and a missing field" do
     schema = [:is_map, fields: [name: [:is_string], surname: [:is_string]]]
-    assert Ve.validate(%{name: 52}, schema) == {:error, ["52_is_not_string", "missing_field_surname"]}
+    assert Ve.validate(%{name: 52}, schema) == {:error, ["string_expected_got_integer", "missing_field_surname"]}
   end
 
   test "map contains some optional fields" do
     schema = [:is_map, fields: [name: [:is_string], surname: [:is_string, :optional]]]
     assert Ve.validate(%{name: "f1"}, schema) == {:ok, %{name: "f1"}}
+  end
+
+  test "map contains invalid field type" do
+    schema = [:is_map, fields: [name: [:is_string]]]
+    assert Ve.validate(%{name: %{n: "n", s: "s"}}, schema) == {:error, ["string_expected_got_map"]}
   end
 end

@@ -67,13 +67,6 @@ defmodule Ve do
       false -> messages ++ ["pattern_not_matched"]
       _     -> messages
     end
-
-    # with {:ok, r} <- Regex.compile(pattern),
-    #      true      <- Regex.match?(r, data) do messages
-    #   else
-    #     {:error, {msg, _}} -> messages ++ ["invalid_regex_pattern: #{msg}"]
-    #     false              -> messages ++ ["pattern_not_matched"]
-    # end
   end
   
   defp validate_fields(messages, nil, _), do: messages
@@ -104,5 +97,10 @@ defmodule Ve do
   defp choose_type(false, _, val), do: val
 
   defp validate_data_as_type(nil, _, _), do: []
-  defp validate_data_as_type(data, name, validation_func), do: if validation_func.(data), do: [], else: ["#{data}_is_not_#{name}"]
+  defp validate_data_as_type(data, name, validation_func), do: if validation_func.(data), do: [], else: ["#{name}_expected_got_#{typeof(data)}"]
+
+  types = ~w[integer bitstring list map atom tuple]
+  for type <- types do
+    def typeof(x) when unquote(:"is_#{type}")(x), do: unquote(type)
+  end
 end
