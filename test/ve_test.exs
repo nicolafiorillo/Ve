@@ -10,6 +10,12 @@ defmodule VeTest do
     {"map", :is_map, valid: %{}, invalid: {"test", "map_expected_got_bitstring"}},
     {"tuple", :is_tuple, valid: {}, invalid: {"test", "tuple_expected_got_bitstring"}},
     {"boolean", :is_boolean, valid: true, invalid: {"test", "boolean_expected_got_bitstring"}},
+    {"float", :is_float, valid: 1.1, invalid: {"a", "float_expected_got_bitstring"}},
+    {"function", :is_function, valid: &Kernel.is_string/1, invalid: {51, "function_expected_got_integer"}},
+    {"binary", :is_binary, valid: <<0, 1, 2>>, invalid: {51, "binary_expected_got_integer"}},
+    # {"pid", :is_pid, valid: :c.pid(0, 250, 0), invalid: {51, "pid_expected_got_integer"}},
+    # {"port", :is_port, valid: "test", invalid: {51, "string_expected_got_integer"}},
+    # {"reference", :is_reference, valid: "test", invalid: {51, "string_expected_got_integer"}},
   ]
 
   Enum.each valid_types, fn {name, type, [valid: valid_data, invalid: {invalid_data, invalid_data_message}]} ->
@@ -97,5 +103,25 @@ defmodule VeTest do
   test "map contains invalid field type" do
     schema = [:is_map, fields: [name: [:is_string]]]
     assert Ve.validate(%{name: %{n: "n", s: "s"}}, schema) == {:error, ["string_expected_got_map"]}
+  end
+
+  test "list contains valid type" do
+    schema = [:is_list, of: [:is_string]]
+    assert Ve.validate(["a", "b"], schema) == {:ok, ["a", "b"]}
+  end
+
+  test "list contains invalid type" do
+    schema = [:is_list, of: [:is_string]]
+    assert Ve.validate(["a", 1], schema) == {:error, ["string_expected_got_integer"]}
+  end
+
+  test "list contains a valid map" do
+    schema = [:is_list, of: [:is_map, fields: [name: [:is_string]]]]
+    assert Ve.validate([%{name: "n"}, %{name: "k"}], schema) == {:ok, [%{name: "n"}, %{name: "k"}]}
+  end
+
+  test "list contains a invalid map field" do
+    schema = [:is_list, of: [:is_map, fields: [name: [:is_string]]]]
+    assert Ve.validate([%{name: "n"}, %{name: 1}], schema) == {:error, ["string_expected_got_integer"]}
   end
 end

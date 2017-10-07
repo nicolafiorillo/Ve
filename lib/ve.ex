@@ -1,7 +1,9 @@
 defmodule Ve do
   @moduledoc false
 
-  @well_known_types [:is_string, :is_integer, :is_atom, :is_map, :is_list, :is_tuple, :is_boolean]
+  @well_known_types [:is_string, :is_integer, :is_atom, :is_map, :is_list, :is_tuple, :is_boolean,
+                      :is_function, :is_binary, :is_float, :is_pid, :is_port, :is_reference]
+  types = ~w[bitstring integer atom map list tuple boolean function binary float pid port reference]
 
   @doc false
   def validate(data, schema) when is_list(schema) when is_list(schema) do
@@ -15,6 +17,7 @@ defmodule Ve do
     max_value = find_value(:max, schema)
     min_value = find_value(:min, schema)
     fields_value = find_value(:fields, schema)
+    of_value = find_value(:of, schema)
     
     messages
       |> validate_nullable(:nullable in schema, data)
@@ -23,18 +26,25 @@ defmodule Ve do
       |> validate_integer_max(max_value, data)
       |> validate_integer_min(min_value, data)
       |> validate_fields(fields_value, data)
+      |> validate_of(of_value, data)
     end
 
   defp validate_as_type(messages, schema, data) do
     messages_on_types = 
       case schema |> get_type() do
-        :is_string  -> validate_data_as_type(data, "string", &Kernel.is_bitstring/1)
-        :is_integer -> validate_data_as_type(data, "integer", &Kernel.is_integer/1)
-        :is_atom    -> validate_data_as_type(data, "atom", &Kernel.is_atom/1)
-        :is_list    -> validate_data_as_type(data, "list", &Kernel.is_list/1)
-        :is_map     -> validate_data_as_type(data, "map", &Kernel.is_map/1)
-        :is_tuple   -> validate_data_as_type(data, "tuple", &Kernel.is_tuple/1)
-        :is_boolean -> validate_data_as_type(data, "boolean", &Kernel.is_boolean/1)
+        :is_string    -> validate_data_as_type(data, "string", &Kernel.is_bitstring/1)
+        :is_integer   -> validate_data_as_type(data, "integer", &Kernel.is_integer/1)
+        :is_atom      -> validate_data_as_type(data, "atom", &Kernel.is_atom/1)
+        :is_list      -> validate_data_as_type(data, "list", &Kernel.is_list/1)
+        :is_map       -> validate_data_as_type(data, "map", &Kernel.is_map/1)
+        :is_tuple     -> validate_data_as_type(data, "tuple", &Kernel.is_tuple/1)
+        :is_boolean   -> validate_data_as_type(data, "boolean", &Kernel.is_boolean/1)
+        :is_function  -> validate_data_as_type(data, "function", &Kernel.is_function/1)
+        :is_binary    -> validate_data_as_type(data, "binary", &Kernel.is_binary/1)
+        :is_float     -> validate_data_as_type(data, "float", &Kernel.is_float/1)
+        :is_pid       -> validate_data_as_type(data, "pid", &Kernel.is_pid/1)
+        :is_port      -> validate_data_as_type(data, "port", &Kernel.is_port/1)
+        :is_reference -> validate_data_as_type(data, "reference", &Kernel.is_reference/1)
         _           -> ["unknown_type"]
       end
 
@@ -83,6 +93,15 @@ defmodule Ve do
     end)
   end
 
+  defp validate_of(messages, nil, _), do: messages
+  defp validate_of(messages, _, nil), do: messages
+  defp validate_of(messages, schema, data) when is_list(data) do
+    Enum.reduce(data, messages, fn field, messages ->
+      messages ++ internal_validate(messages, field, schema)
+    end)
+  end
+  defp validate_of(messages, _, _), do: messages ++ ["of_is_valid_only_in_list"]
+    
   defp validate_nullable(messages, false, nil), do: messages ++ ["cannot_be_nullable"]
   defp validate_nullable(messages, _, _), do: messages
     
@@ -99,7 +118,6 @@ defmodule Ve do
   defp validate_data_as_type(nil, _, _), do: []
   defp validate_data_as_type(data, name, validation_func), do: if validation_func.(data), do: [], else: ["#{name}_expected_got_#{typeof(data)}"]
 
-  types = ~w[integer bitstring list map atom tuple]
   for type <- types do
     def typeof(x) when unquote(:"is_#{type}")(x), do: unquote(type)
   end
