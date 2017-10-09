@@ -17,6 +17,7 @@ defmodule Ve do
     max_value = find_value(:max, schema)
     min_value = find_value(:min, schema)
     fields_value = find_value(:fields, schema)
+    xor_fields_value = find_value(:xor_fields, schema)
     of_value = find_value(:of, schema)
     
     messages
@@ -26,6 +27,7 @@ defmodule Ve do
       |> validate_integer_max(max_value, data)
       |> validate_integer_min(min_value, data)
       |> validate_fields(fields_value, data)
+      |> validate_xor_fields(xor_fields_value, data)
       |> validate_of(of_value, data)
     end
 
@@ -93,11 +95,24 @@ defmodule Ve do
     end)
   end
 
+  defp validate_xor_fields(messages, nil, _), do: messages
+  defp validate_xor_fields(messages, _, nil), do: messages
+  defp validate_xor_fields(messages, fields, data) do
+    present_fields = Enum.filter(fields, fn {field, _schema} -> Map.get(data, field) != nil end)
+    case length(present_fields) do
+      0 -> messages ++ ["at_lease_one_field_must_be_present"]
+      1 -> {field, schema} = List.first(present_fields)
+           field_data = Map.get(data, field)
+           internal_validate(messages, field_data, schema)
+      2 -> messages ++ ["just_one_field_must_be_present"]
+    end
+  end
+
   defp validate_of(messages, nil, _), do: messages
   defp validate_of(messages, _, nil), do: messages
   defp validate_of(messages, schema, data) when is_list(data) do
     Enum.reduce(data, messages, fn field, messages ->
-      messages ++ internal_validate(messages, field, schema)
+      internal_validate(messages, field, schema)
     end)
   end
   defp validate_of(messages, _, _), do: messages ++ ["of_is_valid_only_in_list"]
