@@ -4,7 +4,7 @@ defmodule Ve.Mixfile do
   def project do
     [
       app: :ve,
-      version: "0.1.4",
+      version: "0.1.5",
       description: "Yet another Elixir data validation engine library.",
       elixir: "~> 1.5",
       package: package(),
@@ -33,8 +33,6 @@ defmodule Ve.Mixfile do
   defp deps do
     [
       {:ex_doc, ">= 0.0.0", only: :dev}
-      # {:dep_from_hexpm, "~> 0.3.0"},
-      # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"},
     ]
   end
 end
