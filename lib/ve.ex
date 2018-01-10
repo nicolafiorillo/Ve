@@ -19,11 +19,13 @@ defmodule Ve do
     fields_value = find_value(:fields, schema)
     xor_fields_value = find_value(:xor_fields, schema)
     of_value = find_value(:of, schema)
-    
+    fixed_value = find_value(:value, schema)
+
     messages
       |> validate_nullable(:nullable in schema, data)
       |> validate_as_type(schema, data)
       |> validate_string_pattern(pattern_value, data)
+      |> validate_fixed_value(fixed_value, data)
       |> validate_max(max_value, data)
       |> validate_min(min_value, data)
       |> validate_fields(fields_value, data)
@@ -54,14 +56,16 @@ defmodule Ve do
   end
 
   defp find_value(key, schema) do
-    Enum.find_value(schema, nil, fn k ->
-      case k do
-        {^key, d} -> d
-        _ -> false
-      end
+    Enum.find(schema, nil, fn 
+      {^key, _} -> true
+      _         -> false
     end)
+    |> resolve_value
   end
 
+  defp resolve_value(nil), do: nil
+  defp resolve_value({_, v}), do: v
+  
   defp validate_min(messages, nil, _), do: messages
   defp validate_min(messages, _, nil), do: messages
   defp validate_min(messages, min_value, data) when is_number(data) and min_value <= data, do: messages
@@ -83,6 +87,15 @@ defmodule Ve do
     end
   end
   
+  defp validate_fixed_value(messages, nil, _), do: messages
+  defp validate_fixed_value(messages, _, nil), do: messages
+  defp validate_fixed_value(messages, value, data) do
+    case value == data do
+      false -> messages ++ ["invalid_fixed_value"]
+      _     -> messages
+    end
+  end
+
   defp validate_fields(messages, nil, _), do: messages
   defp validate_fields(messages, _, nil), do: messages
   defp validate_fields(messages, fields, data) do

@@ -174,4 +174,28 @@ defmodule VeTest do
     schema = [:list, of: [:map, xor_fields: [name: [:string], surname: [:string]]]]
     assert Ve.validate([%{}], schema) == {:error, ["at_lease_one_field_must_be_present"]}
   end
+
+  test "string must be a fixed value" do
+    assert Ve.validate("test1", [:string, value: "test1"]) == {:ok, "test1"}
+  end
+
+  test "string is not a fixed value" do
+    assert Ve.validate("test1", [:string, value: "test"]) == {:error, ["invalid_fixed_value"]}
+  end
+
+  test "integer must be a fixed value" do
+    assert Ve.validate(56, [:integer, value: 56]) == {:ok, 56}
+  end
+
+  test "integer is not a fixed value" do
+    assert Ve.validate(56, [:integer, value: 57]) == {:error, ["invalid_fixed_value"]}
+  end
+
+  test "boolean must be a fixed value" do
+    assert Ve.validate(true, [:boolean, value: true]) == {:ok, true}
+  end
+
+  test "boolean is not a fixed value" do
+    assert Ve.validate(true, [:boolean, value: false]) == {:error, ["invalid_fixed_value"]}
+  end
 end

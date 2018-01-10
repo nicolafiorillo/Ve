@@ -77,4 +77,23 @@ nil |> Ve.validate([:string, :nullable])
 {:error, ["just_one_field_must_be_present"]}
 ```
 
+#### Fixed value
+56 |> Ve.validate([:integer, value: 56])
+{:ok, 56}
+
+46 |> Ve.validate([:integer, value: 56])
+{:error, ["invalid_fixed_value"]}
+
+true |> Ve.validate([:boolean, value: true])
+{:ok, true}
+
+false |> Ve.validate([:boolean, value: true])
+{:error, ["invalid_fixed_value"]}
+
+"foo" |> Ve.validate([:string, value: "foo"])
+{:ok, "foo"}
+
+"bar" |> Ve.validate([:string, value: "foo"])
+{:error, ["invalid_fixed_value"]}
+
 Other flags are available but not documented yet.
