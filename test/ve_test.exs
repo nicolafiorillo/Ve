@@ -198,4 +198,16 @@ defmodule VeTest do
   test "boolean is not a fixed value" do
     assert Ve.validate(true, [:boolean, value: false]) == {:error, ["invalid_fixed_value"]}
   end
+
+  test "string is not empty" do
+    assert Ve.validate("a", [:string, :not_empty]) == {:ok, "a"}
+  end
+
+  test "empty string is not empty" do
+    assert Ve.validate("", [:string, :not_empty]) == {:error, ["string_cannot_be_empty"]}
+  end
+
+  test "spaces and tab string is not empty" do
+    assert Ve.validate("  \t  \t", [:string, :not_empty]) == {:error, ["string_cannot_be_empty"]}
+  end
 end

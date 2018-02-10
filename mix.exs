@@ -4,7 +4,7 @@ defmodule Ve.Mixfile do
   def project do
     [
       app: :ve,
-      version: "0.1.6",
+      version: "0.1.7",
       description: "Yet another Elixir data validation engine library.",
       elixir: "~> 1.5",
       package: package(),

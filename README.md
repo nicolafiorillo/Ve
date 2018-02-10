@@ -36,6 +36,16 @@ Some examples for usage.
 
 nil |> Ve.validate([:string, :nullable])  
 {:ok, nil}
+
+"test" |> Ve.validate([:string, :not_empty])
+{:ok, "test"}
+
+"" |> Ve.validate([:string, :not_empty])    
+{:error, ["string_cannot_be_empty"]}
+
+"  \t \t" |> Ve.validate([:string, :not_empty])
+{:error, ["string_cannot_be_empty"]}
+
 ```
 
 #### Integers

@@ -23,6 +23,7 @@ defmodule Ve do
 
     messages
       |> validate_nullable(:nullable in schema, data)
+      |> validate_not_empty(:not_empty in schema, data)
       |> validate_as_type(schema, data)
       |> validate_string_pattern(pattern_value, data)
       |> validate_fixed_value(fixed_value, data)
@@ -138,7 +139,13 @@ defmodule Ve do
     
   defp validate_nullable(messages, false, nil), do: messages ++ ["cannot_be_nullable"]
   defp validate_nullable(messages, _, _), do: messages
-    
+
+  defp validate_not_empty(messages, true, data), do: messages |> validate_not_empty_string(data |> String.trim())
+  defp validate_not_empty(messages, _, _), do: messages
+
+  defp validate_not_empty_string(messages, ""), do: messages ++ ["string_cannot_be_empty"]
+  defp validate_not_empty_string(messages, _), do: messages
+
   defp result([], data), do: {:ok, data}
   defp result(messages, _), do: {:error, messages}
 
