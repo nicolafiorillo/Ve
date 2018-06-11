@@ -65,6 +65,10 @@ defmodule VeTest do
     assert Ve.validate(5, [:integer, min: 6]) == {:error, ["min_violation"]}
   end
 
+  test "min integer violated with custom error message" do
+    assert Ve.validate(5, [:integer, min: 6, err_msg: "value must be minimum 6"]) == {:error, ["value must be minimum 6"]}
+  end
+
   test "max integer" do
     assert Ve.validate(5, [:integer, max: 6]) == {:ok, 5}
   end

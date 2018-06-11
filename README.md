@@ -106,4 +106,8 @@ false |> Ve.validate([:boolean, value: true])
 "bar" |> Ve.validate([:string, value: "foo"])
 {:error, ["invalid_fixed_value"]}
 
+#### Custom validation error message
+5 |> Ve.validate([:integer, min: 6, err_msg: "value must be minimum 6"])
+{:error, ["value must be minimum 6"]}
+
 Other flags are available but not documented yet.

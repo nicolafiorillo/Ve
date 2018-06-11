@@ -20,22 +20,23 @@ defmodule Ve do
     xor_fields_value = find_value(:xor_fields, schema)
     of_value = find_value(:of, schema)
     fixed_value = find_value(:value, schema)
+    error_message = find_value(:err_msg, schema)
 
     messages
-      |> validate_nullable(:nullable in schema, data)
-      |> validate_not_empty(:not_empty in schema, data)
-      |> validate_as_type(schema, data)
-      |> validate_string_pattern(pattern_value, data)
-      |> validate_fixed_value(fixed_value, data)
-      |> validate_max(max_value, data)
-      |> validate_min(min_value, data)
-      |> validate_fields(fields_value, data)
-      |> validate_xor_fields(xor_fields_value, data)
-      |> validate_of(of_value, data)
+      |> validate_nullable(:nullable in schema, data, error_message)
+      |> validate_not_empty(:not_empty in schema, data, error_message)
+      |> validate_as_type(schema, data, error_message)
+      |> validate_string_pattern(pattern_value, data, error_message)
+      |> validate_fixed_value(fixed_value, data, error_message)
+      |> validate_max(max_value, data, error_message)
+      |> validate_min(min_value, data, error_message)
+      |> validate_fields(fields_value, data, error_message)
+      |> validate_xor_fields(xor_fields_value, data, error_message)
+      |> validate_of(of_value, data, error_message)
     end
 
-  defp validate_as_type(messages, schema, data) do
-    messages_on_types = 
+  defp validate_as_type(messages, schema, data, error_message) do
+    messages_on_types =
       case schema |> get_type() do
         :string    -> validate_data_as_type(data, "string", &Kernel.is_bitstring/1)
         :integer   -> validate_data_as_type(data, "integer", &Kernel.is_integer/1)
@@ -57,7 +58,7 @@ defmodule Ve do
   end
 
   defp find_value(key, schema) do
-    Enum.find(schema, nil, fn 
+    Enum.find(schema, nil, fn
       {^key, _} -> true
       _         -> false
     end)
@@ -66,85 +67,93 @@ defmodule Ve do
 
   defp resolve_value(nil), do: nil
   defp resolve_value({_, v}), do: v
-  
-  defp validate_min(messages, nil, _), do: messages
-  defp validate_min(messages, _, nil), do: messages
-  defp validate_min(messages, min_value, data) when is_number(data) and min_value <= data, do: messages
-  defp validate_min(messages, min_value, data) when is_list(data) and min_value <= length(data), do: messages
-  defp validate_min(messages, _, _), do: messages ++ ["min_violation"]
-  
-  defp validate_max(messages, nil, _), do: messages
-  defp validate_max(messages, _, nil), do: messages
-  defp validate_max(messages, max_value, data) when is_number(data) and max_value >= data, do: messages
-  defp validate_max(messages, max_value, data) when is_list(data) and max_value >= length(data), do: messages
-  defp validate_max(messages, _, _), do: messages ++ ["max_violation"]
 
-  defp validate_string_pattern(messages, nil, _), do: messages
-  defp validate_string_pattern(messages, _, nil), do: messages
-  defp validate_string_pattern(messages, pattern, data) do
+  defp validate_min(messages, nil, _, _error_message), do: messages
+  defp validate_min(messages, _, nil, _error_message), do: messages
+  defp validate_min(messages, min_value, data, _error_message) when is_number(data) and min_value <= data, do: messages
+  defp validate_min(messages, min_value, data, _error_message) when is_list(data) and min_value <= length(data), do: messages
+  defp validate_min(messages, _, _, nil), do: messages ++ ["min_violation"]
+  defp validate_min(messages, _, _, error_message), do: messages ++ [error_message]
+
+  defp validate_max(messages, nil, _, _error_message), do: messages
+  defp validate_max(messages, _, nil, _error_message), do: messages
+  defp validate_max(messages, max_value, data, _error_message) when is_number(data) and max_value >= data, do: messages
+  defp validate_max(messages, max_value, data, _error_message) when is_list(data) and max_value >= length(data), do: messages
+  defp validate_max(messages, _, _, nil), do: messages ++ ["max_violation"]
+  defp validate_max(messages, _, _, error_message), do: messages ++ [error_message]
+
+  defp validate_string_pattern(messages, nil, _, _error_message), do: messages
+  defp validate_string_pattern(messages, _, nil, _error_message), do: messages
+  defp validate_string_pattern(messages, pattern, data, error_message) do
     case Regex.match?(pattern, data) do
-      false -> messages ++ ["pattern_not_matched"]
-      _     -> messages
-    end
-  end
-  
-  defp validate_fixed_value(messages, nil, _), do: messages
-  defp validate_fixed_value(messages, _, nil), do: messages
-  defp validate_fixed_value(messages, value, data) do
-    case value == data do
-      false -> messages ++ ["invalid_fixed_value"]
+      false -> messages ++ [message_or_default(error_message, "pattern_not_matched")]
       _     -> messages
     end
   end
 
-  defp validate_fields(messages, nil, _), do: messages
-  defp validate_fields(messages, _, nil), do: messages
-  defp validate_fields(messages, fields, data) do
+  defp message_or_default(nil, def), do: def
+  defp message_or_default(msg, _def), do: msg
+
+  defp validate_fixed_value(messages, nil, _, _error_message), do: messages
+  defp validate_fixed_value(messages, _, nil, _error_message), do: messages
+  defp validate_fixed_value(messages, value, data, error_message) do
+    case value == data do
+      false -> messages ++ [message_or_default(error_message, "invalid_fixed_value")]
+      _     -> messages
+    end
+  end
+
+  defp validate_fields(messages, nil, _, _error_message), do: messages
+  defp validate_fields(messages, _, nil, _error_message), do: messages
+  defp validate_fields(messages, fields, data, error_message) do
     Enum.reduce(fields, messages, fn {field, schema}, messages ->
       optional = :optional in schema
       nullable = :nullable in schema
       is_present = Map.has_key?(data, field)
 
       case {is_present, optional, nullable, Map.get(data, field)} do
-        {false, false, _, _}  -> messages ++ ["missing_field_#{field}"]
+        {false, false, _, _}  -> messages ++ [message_or_default(error_message, "missing_field_#{field}")]
         {false, _, _, _}      -> messages
         {true, _, true, nil}  -> messages
-        {true, _, false, nil} -> messages ++ ["field_#{field}_not_nullable"]
+        {true, _, false, nil} -> messages ++ [message_or_default(error_message, "field_#{field}_not_nullable")]
         {_, _, _, data}       -> internal_validate(messages, data, schema)
       end
     end)
   end
 
-  defp validate_xor_fields(messages, nil, _), do: messages
-  defp validate_xor_fields(messages, _, nil), do: messages
-  defp validate_xor_fields(messages, fields, data) do
+  defp validate_xor_fields(messages, nil, _, _error_message), do: messages
+  defp validate_xor_fields(messages, _, nil, _error_message), do: messages
+  defp validate_xor_fields(messages, fields, data, error_message) do
     present_fields = Enum.filter(fields, fn {field, _schema} -> Map.get(data, field) != nil end)
     case length(present_fields) do
-      0 -> messages ++ ["at_lease_one_field_must_be_present"]
+      0 -> messages ++ [message_or_default(error_message, "at_lease_one_field_must_be_present")]
       1 -> {field, schema} = List.first(present_fields)
            field_data = Map.get(data, field)
            internal_validate(messages, field_data, schema)
-      2 -> messages ++ ["just_one_field_must_be_present"]
+      2 -> messages ++ [message_or_default(error_message, "just_one_field_must_be_present")]
     end
   end
 
-  defp validate_of(messages, nil, _), do: messages
-  defp validate_of(messages, _, nil), do: messages
-  defp validate_of(messages, schema, data) when is_list(data) do
+  defp validate_of(messages, nil, _, _error_message), do: messages
+  defp validate_of(messages, _, nil, _error_message), do: messages
+  defp validate_of(messages, schema, data, _error_message) when is_list(data) do
     Enum.reduce(data, messages, fn field, messages ->
       internal_validate(messages, field, schema)
     end)
   end
-  defp validate_of(messages, _, _), do: messages ++ ["of_is_valid_only_in_list"]
-    
-  defp validate_nullable(messages, false, nil), do: messages ++ ["cannot_be_nullable"]
-  defp validate_nullable(messages, _, _), do: messages
+  defp validate_of(messages, _, _, nil), do: messages ++ ["of_is_valid_only_in_list"]
+  defp validate_of(messages, _, _, error_message), do: messages ++ [error_message]
 
-  defp validate_not_empty(messages, true, data), do: messages |> validate_not_empty_string(data |> String.trim())
-  defp validate_not_empty(messages, _, _), do: messages
+  defp validate_nullable(messages, false, nil, nil), do: messages ++ ["cannot_be_nullable"]
+  defp validate_nullable(messages, false, nil, error_message), do: messages ++ [error_message]
+  defp validate_nullable(messages, _, _, _error_message), do: messages
 
-  defp validate_not_empty_string(messages, ""), do: messages ++ ["string_cannot_be_empty"]
-  defp validate_not_empty_string(messages, _), do: messages
+  defp validate_not_empty(messages, true, data, error_message), do: messages |> validate_not_empty_string(data |> String.trim(), error_message)
+  defp validate_not_empty(messages, _, _, _error_message), do: messages
+
+  defp validate_not_empty_string(messages, "", nil), do: messages ++ ["string_cannot_be_empty"]
+  defp validate_not_empty_string(messages, "", error_message), do: messages ++ [error_message]
+  defp validate_not_empty_string(messages, _, _error_message), do: messages
 
   defp result([], data), do: {:ok, data}
   defp result(messages, _), do: {:error, messages}
