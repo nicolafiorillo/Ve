@@ -35,7 +35,7 @@ defmodule Ve do
       |> validate_of(of_value, data, error_message)
     end
 
-  defp validate_as_type(messages, schema, data, error_message) do
+  defp validate_as_type(messages, schema, data, _error_message) do
     messages_on_types =
       case schema |> get_type() do
         :string    -> validate_data_as_type(data, "string", &Kernel.is_bitstring/1)
