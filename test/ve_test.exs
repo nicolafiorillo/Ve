@@ -160,27 +160,43 @@ defmodule VeTest do
   end
 
   test "list contains a valid map of of xor fields" do
-    schema = [:list, of: [:map, xor_fields: [name: [:string], surname: [:string]]]]
+    schema = [:list, of: [:map, xor: [name: [:string], surname: [:string]]]]
     assert Ve.validate([%{name: "n"}, %{surname: "k"}], schema) == {:ok, [%{name: "n"}, %{surname: "k"}]}
   end
 
   test "empty list contains a valid map of xor fields" do
-    schema = [:list, of: [:map, xor_fields: [name: [:string], surname: [:string]]]]
+    schema = [:list, of: [:map, xor: [name: [:string], surname: [:string]]]]
     assert Ve.validate([], schema) == {:ok, []}
   end
 
   test "list contains a valid map of xor fields: more fields are present" do
-    schema = [:list, of: [:map, xor_fields: [name: [:string], surname: [:string]]]]
+    schema = [:list, of: [:map, xor: [name: [:string], surname: [:string]]]]
     assert Ve.validate([%{name: "n", surname: "k"}], schema) == {:error, ["just_one_field_must_be_present"]}
   end
 
   test "list contains a valid map of of xor fields: missing at least one" do
-    schema = [:list, of: [:map, xor_fields: [name: [:string], surname: [:string]]]]
+    schema = [:list, of: [:map, xor: [name: [:string], surname: [:string]]]]
     assert Ve.validate([%{}], schema) == {:error, ["at_lease_one_field_must_be_present"]}
   end
 
   test "string must be a fixed value" do
     assert Ve.validate("test1", [:string, value: "test1"]) == {:ok, "test1"}
+  end
+
+  test "string can be multiple value" do
+    assert Ve.validate("test1", [:string, in: ["test1", "test2"]]) == {:ok, "test1"}
+  end
+
+  test "atom can be multiple value" do
+    assert Ve.validate(:test1, [:atom, in: [:test1, :test2]]) == {:ok, :test1}
+  end
+
+  test "string can be multiple value but invalid" do
+    assert Ve.validate("test3", [:string, in: ["test1", "test2"]]) == {:error, ["invalid_possible_value"]}
+  end
+
+  test "string can be multiple value but invalid in" do
+    assert Ve.validate("test1", [:string, in: "test1"]) == {:error, ["in_should_be_a_list"]}
   end
 
   test "string is not a fixed value" do

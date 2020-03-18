@@ -17,7 +17,8 @@ defmodule Ve do
     max_value = find_value(:max, schema)
     min_value = find_value(:min, schema)
     fields_value = find_value(:fields, schema)
-    xor_fields_value = find_value(:xor_fields, schema)
+    xor_value = find_value(:xor, schema)
+    in_value = find_value(:in, schema)
     of_value = find_value(:of, schema)
     fixed_value = find_value(:value, schema)
     error_message = find_value(:err_msg, schema)
@@ -31,7 +32,8 @@ defmodule Ve do
       |> validate_max(max_value, data, error_message)
       |> validate_min(min_value, data, error_message)
       |> validate_fields(fields_value, data, error_message)
-      |> validate_xor_fields(xor_fields_value, data, error_message)
+      |> validate_xor(xor_value, data, error_message)
+      |> validate_in(in_value, data, error_message)
       |> validate_of(of_value, data, error_message)
     end
 
@@ -121,9 +123,9 @@ defmodule Ve do
     end)
   end
 
-  defp validate_xor_fields(messages, nil, _, _error_message), do: messages
-  defp validate_xor_fields(messages, _, nil, _error_message), do: messages
-  defp validate_xor_fields(messages, fields, data, error_message) do
+  defp validate_xor(messages, nil, _, _error_message), do: messages
+  defp validate_xor(messages, _, nil, _error_message), do: messages
+  defp validate_xor(messages, fields, data, error_message) do
     present_fields = Enum.filter(fields, fn {field, _schema} -> Map.get(data, field) != nil end)
     case length(present_fields) do
       0 -> messages ++ [message_or_default(error_message, "at_lease_one_field_must_be_present")]
@@ -133,6 +135,16 @@ defmodule Ve do
       2 -> messages ++ [message_or_default(error_message, "just_one_field_must_be_present")]
     end
   end
+
+  defp validate_in(messages, nil, _, _error_message), do: messages
+  defp validate_in(messages, _, nil, _error_message), do: messages
+  defp validate_in(messages, schema, data, error_message) when is_list(schema) do
+    case data in schema do
+      false -> messages ++ [message_or_default(error_message, "invalid_possible_value")]
+      _     -> messages
+    end
+  end
+  defp validate_in(messages, schema, _, _) when not is_list(schema), do: messages ++ ["in_should_be_a_list"]
 
   defp validate_of(messages, nil, _, _error_message), do: messages
   defp validate_of(messages, _, nil, _error_message), do: messages
