@@ -1,7 +1,7 @@
 defmodule Ve do
   @moduledoc false
 
-  @well_known_types [:string, :integer, :atom, :map, :list, :tuple, :boolean,
+  @well_known_types [:any, :string, :integer, :atom, :map, :list, :tuple, :boolean,
                       :function, :binary, :float, :pid, :port, :reference]
   types = ~w[bitstring integer atom map list tuple boolean function binary float pid port reference]
 
@@ -40,6 +40,7 @@ defmodule Ve do
   defp validate_as_type(messages, schema, data, _error_message) do
     messages_on_types =
       case schema |> get_type() do
+        :any       -> []
         :string    -> validate_data_as_type(data, "string", &Kernel.is_bitstring/1)
         :integer   -> validate_data_as_type(data, "integer", &Kernel.is_integer/1)
         :atom      -> validate_data_as_type(data, "atom", &Kernel.is_atom/1)

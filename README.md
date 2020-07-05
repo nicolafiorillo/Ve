@@ -20,13 +20,29 @@ end
 
 ## Usage
 
-Some examples for usage.
+Some trivial examples for usage.
+
+#### Any
+
+```elixir
+"foo" |> Ve.validate([:any, in: ["foo", 42]])
+{:ok, "foo"}
+
+42 |> Ve.validate([:any, in: ["some data", 42]])
+{:ok, 42}
+```
 
 #### Strings
 
 ```elixir
 "foo" |> Ve.validate([:string])       
 {:ok, "foo"}
+
+"foo" |> Ve.validate([:string, in: ["foo", "bar"]])
+{:ok, "foo"}
+
+"baz" |> Ve.validate([:string, in: ["foo", "bar"]])
+{:error, ["invalid_possible_value"]}
 
 123 |> Ve.validate([:string])  
 {:error, ["string_expected_got_integer"]}
@@ -45,7 +61,6 @@ nil |> Ve.validate([:string, :nullable])
 
 "  \t \t" |> Ve.validate([:string, :not_empty])
 {:error, ["string_cannot_be_empty"]}
-
 ```
 
 #### Integers
@@ -88,6 +103,7 @@ nil |> Ve.validate([:string, :nullable])
 ```
 
 #### Fixed value
+```elixir
 56 |> Ve.validate([:integer, value: 56])
 {:ok, 56}
 
@@ -105,9 +121,10 @@ false |> Ve.validate([:boolean, value: true])
 
 "bar" |> Ve.validate([:string, value: "foo"])
 {:error, ["invalid_fixed_value"]}
+```
 
 #### Custom validation error message
+```elixir
 5 |> Ve.validate([:integer, min: 6, err_msg: "value must be minimum 6"])
 {:error, ["value must be minimum 6"]}
-
-Other flags are available but not documented yet.
+```

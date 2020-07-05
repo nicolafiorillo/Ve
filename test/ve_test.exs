@@ -49,6 +49,18 @@ defmodule VeTest do
     assert Ve.validate("some data", []) == {:error, ["unknown_type"]}
   end
 
+  test "any type" do
+    assert Ve.validate("some data", [:any]) == {:ok, "some data"}
+  end
+
+  test "multiple type 1" do
+    assert Ve.validate("some data", [:any, in: ["some data", 42]]) == {:ok, "some data"}
+  end
+
+  test "multiple type 2" do
+    assert Ve.validate(42, [:any, in: ["some data", 42]]) == {:ok, 42}
+  end
+
   test "apply pattern to string" do
     assert Ve.validate("some data", [:string, pattern: ~r/data/]) == {:ok, "some data"}
   end
