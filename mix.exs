@@ -4,7 +4,7 @@ defmodule Ve.Mixfile do
   def project do
     [
       app: :ve,
-      version: "0.1.10",
+      version: "0.1.11",
       description: "Yet another Elixir data validation engine library.",
       elixir: "~> 1.5",
       package: package(),
@@ -32,7 +32,7 @@ defmodule Ve.Mixfile do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:ex_doc, ">= 0.0.0", only: :dev}
+      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
     ]
   end
 end
