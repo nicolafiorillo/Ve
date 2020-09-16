@@ -130,6 +130,22 @@ defmodule VeTest do
     assert Ve.validate(%{name: %{n: "n", s: "s"}}, schema) == {:error, ["string_expected_got_map"]}
   end
 
+  test "map of xor fields" do
+    schema = [:map, xor: [name: [:string], surname: [:string]]]
+    assert Ve.validate(%{name: "n", other: "o"}, schema) == {:ok, %{name: "n", other: "o"}}
+  end
+
+  test "empty map of xor fields: missing at least one" do
+    schema = [:map, xor: [name: [:string], surname: [:string]]]
+    assert Ve.validate(%{}, schema) == {:error, ["at_lease_one_field_must_be_present"]}
+    assert Ve.validate(%{other: "o"}, schema) == {:error, ["at_lease_one_field_must_be_present"]}
+  end
+
+  test "map of xor fields: more fields are present" do
+    schema = [:map, xor: [name: [:string], surname: [:string]]]
+    assert Ve.validate(%{name: "n", surname: "k"}, schema) == {:error, ["just_one_field_must_be_present"]}
+  end
+
   test "list contains valid type" do
     schema = [:list, of: [:string]]
     assert Ve.validate(["a", "b"], schema) == {:ok, ["a", "b"]}
@@ -173,26 +189,6 @@ defmodule VeTest do
   test "list contains a invalid map field" do
     schema = [:list, of: [:map, fields: [name: [:string]]]]
     assert Ve.validate([%{name: "n"}, %{name: 1}], schema) == {:error, ["string_expected_got_integer"]}
-  end
-
-  test "list contains a valid map of xor fields" do
-    schema = [:list, of: [:map, xor: [name: [:string], surname: [:string]]]]
-    assert Ve.validate([%{name: "n"}, %{surname: "k"}], schema) == {:ok, [%{name: "n"}, %{surname: "k"}]}
-  end
-
-  test "empty list contains a valid map of xor fields" do
-    schema = [:list, of: [:map, xor: [name: [:string], surname: [:string]]]]
-    assert Ve.validate([], schema) == {:ok, []}
-  end
-
-  test "list contains a valid map of xor fields: more fields are present" do
-    schema = [:list, of: [:map, xor: [name: [:string], surname: [:string]]]]
-    assert Ve.validate([%{name: "n", surname: "k"}], schema) == {:error, ["just_one_field_must_be_present"]}
-  end
-
-  test "list contains a valid map of xor fields: missing at least one" do
-    schema = [:list, of: [:map, xor: [name: [:string], surname: [:string]]]]
-    assert Ve.validate([%{}], schema) == {:error, ["at_lease_one_field_must_be_present"]}
   end
 
   test "string must be a fixed value" do
