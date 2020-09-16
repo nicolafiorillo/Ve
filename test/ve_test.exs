@@ -175,7 +175,7 @@ defmodule VeTest do
     assert Ve.validate([%{name: "n"}, %{name: 1}], schema) == {:error, ["string_expected_got_integer"]}
   end
 
-  test "list contains a valid map of of xor fields" do
+  test "list contains a valid map of xor fields" do
     schema = [:list, of: [:map, xor: [name: [:string], surname: [:string]]]]
     assert Ve.validate([%{name: "n"}, %{surname: "k"}], schema) == {:ok, [%{name: "n"}, %{surname: "k"}]}
   end
@@ -190,7 +190,7 @@ defmodule VeTest do
     assert Ve.validate([%{name: "n", surname: "k"}], schema) == {:error, ["just_one_field_must_be_present"]}
   end
 
-  test "list contains a valid map of of xor fields: missing at least one" do
+  test "list contains a valid map of xor fields: missing at least one" do
     schema = [:list, of: [:map, xor: [name: [:string], surname: [:string]]]]
     assert Ve.validate([%{}], schema) == {:error, ["at_lease_one_field_must_be_present"]}
   end
