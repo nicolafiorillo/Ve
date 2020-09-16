@@ -149,14 +149,14 @@ defmodule Ve do
 
   defp validate_of(messages, nil, _, _error_message), do: messages
   defp validate_of(messages, _, nil, _error_message), do: messages
+  defp validate_of(messages, _, data, error_message) when not is_list(data), do: messages ++ [message_or_default(error_message, "of_is_valid_only_in_list")]
 
-  defp validate_of(messages, schema, data, _error_message) when is_list(data) do
+  defp validate_of(messages, schema, data, _error_message) do
     Enum.reduce(data, messages, fn field, messages ->
       internal_validate(messages, field, schema)
     end)
   end
 
-  defp validate_of(messages, _, _, error_message), do: messages ++ [message_or_default(error_message, "of_is_valid_only_in_list")]
 
   defp validate_nullable(messages, false, nil, error_message), do: messages ++ [message_or_default(error_message, "cannot_be_nullable")]
   defp validate_nullable(messages, _, _, _error_message), do: messages
