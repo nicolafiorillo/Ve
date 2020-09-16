@@ -38,8 +38,8 @@ defmodule Ve do
     error_message = Keyword.get(schema, :err_msg)
 
     messages
-    |> validate_nullable(:nullable in schema, data, error_message)
     |> validate_type(type_value, data, error_message)
+    |> validate_nullable(:nullable in schema, data, error_message)
     |> validate_not_empty(:not_empty in schema, data, error_message)
     |> validate_string_pattern(pattern_value, data, error_message)
     |> validate_fixed_value(fixed_value, data, error_message)
