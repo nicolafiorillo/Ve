@@ -55,7 +55,7 @@ defmodule Ve do
     messages_on_types =
       case schema |> get_type() do
         :any -> []
-        :string -> validate_data_as_type(data, "string", &is_bitstring/1)
+        :string -> validate_data_as_type(data, "string", &is_binary/1)
         :integer -> validate_data_as_type(data, "integer", &is_integer/1)
         :atom -> validate_data_as_type(data, "atom", &is_atom/1)
         :list -> validate_data_as_type(data, "list", &is_list/1)
@@ -199,8 +199,13 @@ defmodule Ve do
 
   defp validate_data_as_type(nil, _, _), do: []
 
-  defp validate_data_as_type(data, name, validation_func),
-    do: if(validation_func.(data), do: [], else: ["#{name}_expected_got_#{typeof(data)}"])
+  defp validate_data_as_type(data, name, is_type_fun) do
+    if is_type_fun.(data) do
+      []
+    else
+      ["#{name}_expected_got_#{typeof(data)}"]
+    end
+  end
 
   for type <- types do
     defp typeof(x) when unquote(:"is_#{type}")(x), do: unquote(type)
