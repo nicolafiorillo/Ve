@@ -20,22 +20,22 @@ defmodule Ve do
   types = ~w[bitstring integer atom map list tuple boolean function binary float pid port reference]
 
   @doc false
-  def validate(data, schema) when is_list(schema) when is_list(schema) do
+  def validate(data, schema) when is_list(schema) do
     []
     |> internal_validate(data, schema)
     |> result(data)
   end
 
   defp internal_validate(messages, data, schema) do
-    pattern_value = find_value(:pattern, schema)
-    max_value = find_value(:max, schema)
-    min_value = find_value(:min, schema)
-    fields_value = find_value(:fields, schema)
-    xor_value = find_value(:xor, schema)
-    in_value = find_value(:in, schema)
-    of_value = find_value(:of, schema)
-    fixed_value = find_value(:value, schema)
-    error_message = find_value(:err_msg, schema)
+    pattern_value = Keyword.get(schema, :pattern)
+    max_value = Keyword.get(schema, :max)
+    min_value = Keyword.get(schema, :min)
+    fields_value = Keyword.get(schema, :fields)
+    xor_value = Keyword.get(schema, :xor)
+    in_value = Keyword.get(schema, :in)
+    of_value = Keyword.get(schema, :of)
+    fixed_value = Keyword.get(schema, :value)
+    error_message = Keyword.get(schema, :err_msg)
 
     messages
     |> validate_nullable(:nullable in schema, data, error_message)
@@ -73,17 +73,6 @@ defmodule Ve do
 
     messages ++ messages_on_types
   end
-
-  defp find_value(key, schema) do
-    Enum.find(schema, nil, fn
-      {^key, _} -> true
-      _ -> false
-    end)
-    |> resolve_value
-  end
-
-  defp resolve_value(nil), do: nil
-  defp resolve_value({_, v}), do: v
 
   defp validate_min(messages, nil, _, _error_message), do: messages
   defp validate_min(messages, _, nil, _error_message), do: messages
