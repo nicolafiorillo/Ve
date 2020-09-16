@@ -203,6 +203,6 @@ defmodule Ve do
     do: if(validation_func.(data), do: [], else: ["#{name}_expected_got_#{typeof(data)}"])
 
   for type <- types do
-    def typeof(x) when unquote(:"is_#{type}")(x), do: unquote(type)
+    defp typeof(x) when unquote(:"is_#{type}")(x), do: unquote(type)
   end
 end
