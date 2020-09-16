@@ -81,8 +81,7 @@ defmodule Ve do
   defp validate_min(messages, min_value, data, _error_message) when is_list(data) and min_value <= length(data),
     do: messages
 
-  defp validate_min(messages, _, _, nil), do: messages ++ ["min_violation"]
-  defp validate_min(messages, _, _, error_message), do: messages ++ [error_message]
+  defp validate_min(messages, _, _, error_message), do: messages ++ [message_or_default(error_message, "min_violation")]
 
   defp validate_max(messages, nil, _, _error_message), do: messages
   defp validate_max(messages, _, nil, _error_message), do: messages
@@ -91,8 +90,7 @@ defmodule Ve do
   defp validate_max(messages, max_value, data, _error_message) when is_list(data) and max_value >= length(data),
     do: messages
 
-  defp validate_max(messages, _, _, nil), do: messages ++ ["max_violation"]
-  defp validate_max(messages, _, _, error_message), do: messages ++ [error_message]
+  defp validate_max(messages, _, _, error_message), do: messages ++ [message_or_default(error_message, "max_violation")]
 
   defp validate_string_pattern(messages, nil, _, _error_message), do: messages
   defp validate_string_pattern(messages, _, nil, _error_message), do: messages
@@ -104,8 +102,7 @@ defmodule Ve do
     end
   end
 
-  defp message_or_default(nil, def), do: def
-  defp message_or_default(msg, _def), do: msg
+  defp message_or_default(msg, default), do: msg || default
 
   defp validate_fixed_value(messages, nil, _, _error_message), do: messages
   defp validate_fixed_value(messages, _, nil, _error_message), do: messages
@@ -177,11 +174,9 @@ defmodule Ve do
     end)
   end
 
-  defp validate_of(messages, _, _, nil), do: messages ++ ["of_is_valid_only_in_list"]
-  defp validate_of(messages, _, _, error_message), do: messages ++ [error_message]
+  defp validate_of(messages, _, _, error_message), do: messages ++ [message_or_default(error_message, "of_is_valid_only_in_list")]
 
-  defp validate_nullable(messages, false, nil, nil), do: messages ++ ["cannot_be_nullable"]
-  defp validate_nullable(messages, false, nil, error_message), do: messages ++ [error_message]
+  defp validate_nullable(messages, false, nil, error_message), do: messages ++ [message_or_default(error_message, "cannot_be_nullable")]
   defp validate_nullable(messages, _, _, _error_message), do: messages
 
   defp validate_not_empty(messages, true, data, error_message),
@@ -189,8 +184,7 @@ defmodule Ve do
 
   defp validate_not_empty(messages, _, _, _error_message), do: messages
 
-  defp validate_not_empty_string(messages, "", nil), do: messages ++ ["string_cannot_be_empty"]
-  defp validate_not_empty_string(messages, "", error_message), do: messages ++ [error_message]
+  defp validate_not_empty_string(messages, "", error_message), do: messages ++ [message_or_default(error_message, "string_cannot_be_empty")]
   defp validate_not_empty_string(messages, _, _error_message), do: messages
 
   defp result([], data), do: {:ok, data}
