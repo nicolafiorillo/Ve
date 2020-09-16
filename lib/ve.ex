@@ -39,7 +39,7 @@ defmodule Ve do
 
     messages
     |> validate_nullable(:nullable in schema, data, error_message)
-    |> validate_as_type(type_value, data, error_message)
+    |> validate_type(type_value, data, error_message)
     |> validate_not_empty(:not_empty in schema, data, error_message)
     |> validate_string_pattern(pattern_value, data, error_message)
     |> validate_fixed_value(fixed_value, data, error_message)
@@ -51,9 +51,9 @@ defmodule Ve do
     |> validate_of(of_value, data, error_message)
   end
 
-  defp validate_as_type(messages, type, data, _error_message) do
+  defp validate_type(messages, type, data, _error_message) do
     is_type_fun = Map.get(@type_2_is_type_fun, type)
-    messages ++ validate_data_as_type(data, type, is_type_fun)
+    messages ++ validate_data_type(data, type, is_type_fun)
   end
 
   defp validate_min(messages, nil, _, _error_message), do: messages
@@ -157,7 +157,6 @@ defmodule Ve do
     end)
   end
 
-
   defp validate_nullable(messages, false, nil, error_message), do: messages ++ [message_or_default(error_message, "cannot_be_nullable")]
   defp validate_nullable(messages, _, _, _error_message), do: messages
 
@@ -174,10 +173,10 @@ defmodule Ve do
 
   defp get_type(schema), do: Enum.find(schema, &(Map.has_key?(@type_2_is_type_fun, &1)))
 
-  defp validate_data_as_type(nil, _, _), do: []
-  defp validate_data_as_type(_, nil, _), do: ["unknown_type"]
+  defp validate_data_type(nil, _, _), do: []
+  defp validate_data_type(_, nil, _), do: ["unknown_type"]
 
-  defp validate_data_as_type(data, type, is_type_fun) do
+  defp validate_data_type(data, type, is_type_fun) do
     if is_type_fun.(data) do
       []
     else
