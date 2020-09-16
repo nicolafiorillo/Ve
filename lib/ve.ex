@@ -1,22 +1,22 @@
 defmodule Ve do
   @moduledoc false
 
-  @well_known_types [
-    :any,
-    :string,
-    :integer,
-    :atom,
-    :map,
-    :list,
-    :tuple,
-    :boolean,
-    :function,
-    :binary,
-    :float,
-    :pid,
-    :port,
-    :reference
-  ]
+  @type_2_is_type_fun %{
+    any: &Ve.Utils.is_any/1,
+    string: &is_binary/1,
+    integer: &is_integer/1,
+    atom: &is_atom/1,
+    map: &is_map/1,
+    list: &is_list/1,
+    tuple: &is_tuple/1,
+    boolean: &is_boolean/1,
+    function: &is_function/1,
+    binary: &is_binary/1,
+    float: &is_float/1,
+    pid: &is_pid/1,
+    port: &is_port/1,
+    reference: &is_reference/1
+  }
 
   @doc false
   def validate(data, schema) when is_list(schema) do
@@ -52,26 +52,8 @@ defmodule Ve do
   end
 
   defp validate_as_type(messages, type, data, _error_message) do
-    messages_on_types =
-      case type do
-        :any -> []
-        :string -> validate_data_as_type(data, "string", &is_binary/1)
-        :integer -> validate_data_as_type(data, "integer", &is_integer/1)
-        :atom -> validate_data_as_type(data, "atom", &is_atom/1)
-        :list -> validate_data_as_type(data, "list", &is_list/1)
-        :map -> validate_data_as_type(data, "map", &is_map/1)
-        :tuple -> validate_data_as_type(data, "tuple", &is_tuple/1)
-        :boolean -> validate_data_as_type(data, "boolean", &is_boolean/1)
-        :function -> validate_data_as_type(data, "function", &is_function/1)
-        :binary -> validate_data_as_type(data, "binary", &is_binary/1)
-        :float -> validate_data_as_type(data, "float", &is_float/1)
-        :pid -> validate_data_as_type(data, "pid", &is_pid/1)
-        :port -> validate_data_as_type(data, "port", &is_port/1)
-        :reference -> validate_data_as_type(data, "reference", &is_reference/1)
-        _ -> ["unknown_type"]
-      end
-
-    messages ++ messages_on_types
+    is_type_fun = Map.get(@type_2_is_type_fun, type)
+    messages ++ validate_data_as_type(data, type, is_type_fun)
   end
 
   defp validate_min(messages, nil, _, _error_message), do: messages
@@ -190,15 +172,16 @@ defmodule Ve do
   defp result([], data), do: {:ok, data}
   defp result(messages, _), do: {:error, messages}
 
-  defp get_type(schema), do: Enum.find(schema, &(&1 in @well_known_types))
+  defp get_type(schema), do: Enum.find(schema, &(Map.has_key?(@type_2_is_type_fun, &1)))
 
   defp validate_data_as_type(nil, _, _), do: []
+  defp validate_data_as_type(_, nil, _), do: ["unknown_type"]
 
-  defp validate_data_as_type(data, name, is_type_fun) do
+  defp validate_data_as_type(data, type, is_type_fun) do
     if is_type_fun.(data) do
       []
     else
-      ["#{name}_expected_got_#{Ve.Utils.typeof(data)}"]
+      ["#{type}_expected_got_#{Ve.Utils.typeof(data)}"]
     end
   end
 end
@@ -209,4 +192,6 @@ defmodule Ve.Utils do
   for type <- types do
     def typeof(x) when unquote(:"is_#{type}")(x), do: unquote(type)
   end
+
+  def is_any(_), do: true
 end
