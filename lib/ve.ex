@@ -155,15 +155,15 @@ defmodule Ve do
 
   defp validate_in(messages, nil, _, _error_message), do: messages
   defp validate_in(messages, _, nil, _error_message), do: messages
+  defp validate_in(messages, schema, _, _) when not is_list(schema), do: messages ++ ["in_should_be_a_list"]
 
-  defp validate_in(messages, schema, data, error_message) when is_list(schema) do
+  defp validate_in(messages, schema, data, error_message) do
     case data in schema do
       false -> messages ++ [message_or_default(error_message, "invalid_possible_value")]
       _ -> messages
     end
   end
 
-  defp validate_in(messages, schema, _, _) when not is_list(schema), do: messages ++ ["in_should_be_a_list"]
 
   defp validate_of(messages, nil, _, _error_message), do: messages
   defp validate_of(messages, _, nil, _error_message), do: messages
