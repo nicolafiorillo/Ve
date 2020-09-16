@@ -12,16 +12,16 @@ defmodule VeTest do
     {"boolean", :boolean, valid: true, invalid: {"test", "boolean_expected_got_bitstring"}},
     {"float", :float, valid: 1.1, invalid: {"a", "float_expected_got_bitstring"}},
     {"function", :function, valid: &Kernel.is_string/1, invalid: {51, "function_expected_got_integer"}},
-    {"binary", :binary, valid: <<0, 1, 2>>, invalid: {51, "binary_expected_got_integer"}},
+    {"binary", :binary, valid: <<0, 1, 2>>, invalid: {51, "binary_expected_got_integer"}}
     # {"pid", :pid, valid: :c.pid(0, 250, 0), invalid: {51, "pid_expected_got_integer"}},
     # {"port", :port, valid: "test", invalid: {51, "string_expected_got_integer"}},
     # {"reference", :reference, valid: "test", invalid: {51, "string_expected_got_integer"}},
   ]
 
-  Enum.each valid_types, fn {name, type, [valid: valid_data, invalid: {invalid_data, invalid_data_message}]} ->
+  Enum.each(valid_types, fn {name, type, [valid: valid_data, invalid: {invalid_data, invalid_data_message}]} ->
     test "type #{name} is valid" do
       type = unquote(type)
-      data = unquote(valid_data |> Macro.escape)
+      data = unquote(valid_data |> Macro.escape())
 
       assert Ve.validate(data, [type]) == {:ok, data}
     end
@@ -36,14 +36,14 @@ defmodule VeTest do
 
     test "type #{name} is valid but nullable" do
       type = unquote(type)
-      assert Ve.validate(nil, [type, :nullable]) == {:ok, nil }
+      assert Ve.validate(nil, [type, :nullable]) == {:ok, nil}
     end
 
     test "type #{name} is nil but not nullable" do
       type = unquote(type)
       assert Ve.validate(nil, [type]) == {:error, ["cannot_be_nullable"]}
     end
-  end
+  end)
 
   test "unknown type" do
     assert Ve.validate("some data", []) == {:error, ["unknown_type"]}
@@ -78,7 +78,8 @@ defmodule VeTest do
   end
 
   test "min integer violated with custom error message" do
-    assert Ve.validate(5, [:integer, min: 6, err_msg: "value must be minimum 6"]) == {:error, ["value must be minimum 6"]}
+    assert Ve.validate(5, [:integer, min: 6, err_msg: "value must be minimum 6"]) ==
+             {:error, ["value must be minimum 6"]}
   end
 
   test "max integer" do
@@ -98,12 +99,15 @@ defmodule VeTest do
   end
 
   test "map contains a field with invalid type" do
-    assert Ve.validate(%{field: "field"}, [:map, fields: [field: [:integer]]]) == {:error, ["integer_expected_got_bitstring"]}
+    assert Ve.validate(%{field: "field"}, [:map, fields: [field: [:integer]]]) ==
+             {:error, ["integer_expected_got_bitstring"]}
   end
 
   test "map contains some fields with invalid type" do
     schema = [:map, fields: [name: [:string], surname: [:string]]]
-    assert Ve.validate(%{name: 52, surname: 54}, schema) == {:error, ["string_expected_got_integer", "string_expected_got_integer"]}
+
+    assert Ve.validate(%{name: 52, surname: 54}, schema) ==
+             {:error, ["string_expected_got_integer", "string_expected_got_integer"]}
   end
 
   test "map contains an invalid field and a missing field" do
