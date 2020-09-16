@@ -27,6 +27,8 @@ defmodule Ve do
 
   defp internal_validate(messages, data, schema) do
     type_value = get_type(schema)
+    nullable_value = :nullable in schema
+    not_empty_value = :not_empty in schema
     pattern_value = Keyword.get(schema, :pattern)
     max_value = Keyword.get(schema, :max)
     min_value = Keyword.get(schema, :min)
@@ -39,8 +41,8 @@ defmodule Ve do
 
     messages
     |> validate_type(type_value, data, error_message)
-    |> validate_nullable(:nullable in schema, data, error_message)
-    |> validate_not_empty(:not_empty in schema, data, error_message)
+    |> validate_nullable(nullable_value, data, error_message)
+    |> validate_not_empty(not_empty_value, data, error_message)
     |> validate_string_pattern(pattern_value, data, error_message)
     |> validate_fixed_value(fixed_value, data, error_message)
     |> validate_max(max_value, data, error_message)
