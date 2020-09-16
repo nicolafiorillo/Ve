@@ -39,8 +39,8 @@ defmodule Ve do
 
     messages
     |> validate_nullable(:nullable in schema, data, error_message)
-    |> validate_not_empty(:not_empty in schema, data, error_message)
     |> validate_as_type(schema, data, error_message)
+    |> validate_not_empty(:not_empty in schema, data, error_message)
     |> validate_string_pattern(pattern_value, data, error_message)
     |> validate_fixed_value(fixed_value, data, error_message)
     |> validate_max(max_value, data, error_message)
