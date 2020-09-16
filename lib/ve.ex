@@ -191,12 +191,7 @@ defmodule Ve do
   defp result([], data), do: {:ok, data}
   defp result(messages, _), do: {:error, messages}
 
-  defp get_type(schema) do
-    schema |> Enum.reduce(nil, fn f, acc -> (f in @well_known_types) |> choose_type(f, acc) end)
-  end
-
-  defp choose_type(true, val, _), do: val
-  defp choose_type(false, _, val), do: val
+  defp get_type(schema), do: Enum.find(schema, &(&1 in @well_known_types))
 
   defp validate_data_as_type(nil, _, _), do: []
 
