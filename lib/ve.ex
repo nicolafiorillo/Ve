@@ -17,7 +17,6 @@ defmodule Ve do
     :port,
     :reference
   ]
-  types = ~w[bitstring integer atom map list tuple boolean function binary float pid port reference]
 
   @doc false
   def validate(data, schema) when is_list(schema) do
@@ -199,11 +198,15 @@ defmodule Ve do
     if is_type_fun.(data) do
       []
     else
-      ["#{name}_expected_got_#{typeof(data)}"]
+      ["#{name}_expected_got_#{Ve.Utils.typeof(data)}"]
     end
   end
+end
+
+defmodule Ve.Utils do
+  types = ~w[bitstring integer atom map list tuple boolean function binary float pid port reference]
 
   for type <- types do
-    defp typeof(x) when unquote(:"is_#{type}")(x), do: unquote(type)
+    def typeof(x) when unquote(:"is_#{type}")(x), do: unquote(type)
   end
 end
