@@ -190,7 +190,7 @@ defmodule Ve do
   defp result([], data), do: {:ok, data}
   defp result(messages, _), do: {:error, messages}
 
-  defp get_type(schema) when is_list(schema) do
+  defp get_type(schema) do
     schema |> Enum.reduce(nil, fn f, acc -> (f in @well_known_types) |> choose_type(f, acc) end)
   end
 
