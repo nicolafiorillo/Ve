@@ -55,19 +55,19 @@ defmodule Ve do
     messages_on_types =
       case schema |> get_type() do
         :any -> []
-        :string -> validate_data_as_type(data, "string", &Kernel.is_bitstring/1)
-        :integer -> validate_data_as_type(data, "integer", &Kernel.is_integer/1)
-        :atom -> validate_data_as_type(data, "atom", &Kernel.is_atom/1)
-        :list -> validate_data_as_type(data, "list", &Kernel.is_list/1)
-        :map -> validate_data_as_type(data, "map", &Kernel.is_map/1)
-        :tuple -> validate_data_as_type(data, "tuple", &Kernel.is_tuple/1)
-        :boolean -> validate_data_as_type(data, "boolean", &Kernel.is_boolean/1)
-        :function -> validate_data_as_type(data, "function", &Kernel.is_function/1)
-        :binary -> validate_data_as_type(data, "binary", &Kernel.is_binary/1)
-        :float -> validate_data_as_type(data, "float", &Kernel.is_float/1)
-        :pid -> validate_data_as_type(data, "pid", &Kernel.is_pid/1)
-        :port -> validate_data_as_type(data, "port", &Kernel.is_port/1)
-        :reference -> validate_data_as_type(data, "reference", &Kernel.is_reference/1)
+        :string -> validate_data_as_type(data, "string", &is_bitstring/1)
+        :integer -> validate_data_as_type(data, "integer", &is_integer/1)
+        :atom -> validate_data_as_type(data, "atom", &is_atom/1)
+        :list -> validate_data_as_type(data, "list", &is_list/1)
+        :map -> validate_data_as_type(data, "map", &is_map/1)
+        :tuple -> validate_data_as_type(data, "tuple", &is_tuple/1)
+        :boolean -> validate_data_as_type(data, "boolean", &is_boolean/1)
+        :function -> validate_data_as_type(data, "function", &is_function/1)
+        :binary -> validate_data_as_type(data, "binary", &is_binary/1)
+        :float -> validate_data_as_type(data, "float", &is_float/1)
+        :pid -> validate_data_as_type(data, "pid", &is_pid/1)
+        :port -> validate_data_as_type(data, "port", &is_port/1)
+        :reference -> validate_data_as_type(data, "reference", &is_reference/1)
         _ -> ["unknown_type"]
       end
 
