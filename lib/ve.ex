@@ -34,14 +34,14 @@ defmodule Ve do
     |> case do
       [] ->
         messages
-        |> validate_any_type_constraints(data, schema, error_message)
+        |> validate_generic_type_constraints(data, schema, error_message)
         |> validate_specific_type_constraints(type_value, data, schema, error_message)
       error_message ->
         error_message
     end
   end
 
-  defp validate_any_type_constraints(messages, data, schema, error_message) do
+  defp validate_generic_type_constraints(messages, data, schema, error_message) do
     nullable_value = :nullable in schema
     in_value = Keyword.get(schema, :in)
     fixed_value = Keyword.get(schema, :value)
