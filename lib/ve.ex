@@ -11,19 +11,18 @@ defmodule Ve do
   end
 
   def validation_messages(messages, data, schema) do
-    type_value = Validator.Generic.get_type(schema)
+    type = Validator.Generic.get_type(schema)
     error_message = Keyword.get(schema, :err_msg)
 
-    messages
-    |> Validator.Generic.validate_type(type_value, data, error_message)
+    Validator.Generic.validate_type(type, data)
     |> case do
       [] ->
         messages
         |> Validator.Generic.validate(data, schema, error_message)
-        |> Validator.Specific.validate(type_value, data, schema, error_message)
+        |> Validator.Specific.validate(type, data, schema, error_message)
 
-      error_message ->
-        error_message
+      type_error_message ->
+        type_error_message ++ messages
     end
   end
 end

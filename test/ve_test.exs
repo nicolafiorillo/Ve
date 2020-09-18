@@ -115,6 +115,11 @@ defmodule VeTest do
     assert Ve.validate(%{name: 52}, schema) == {:error, ["string_expected_got_integer", "missing_field_surname"]}
   end
 
+  test "map contains an invalid field and an invalid list item" do
+    schema = [:map, fields: [b: [:integer], a: [:list, of: [:integer, min: 0]]]]
+    assert Ve.validate(%{a: [-1, 3], b: ""}, schema) == {:error, ["integer_expected_got_bitstring", "min_violation"]}
+  end
+
   test "map contains some optional fields" do
     schema = [:map, fields: [name: [:string], surname: [:string, :optional]]]
     assert Ve.validate(%{name: "f1"}, schema) == {:ok, %{name: "f1"}}

@@ -29,18 +29,15 @@ defmodule Ve.Validator.Generic do
     |> validate_fixed_value(fixed_value, data, error_message)
   end
 
-  def validate_type(messages, type, data, _error_message) do
+  def validate_type(type, data) do
     is_type_fun = Map.get(@type_2_is_type_fun, type)
 
-    extra_messages =
-      cond do
-        data == nil -> []
-        type == nil -> ["unknown_type"]
-        is_type_fun.(data) -> []
-        true -> ["#{type}_expected_got_#{Utils.typeof(data)}"]
-      end
-
-    messages ++ extra_messages
+    cond do
+      data == nil -> []
+      type == nil -> ["unknown_type"]
+      is_type_fun.(data) -> []
+      true -> ["#{type}_expected_got_#{Utils.typeof(data)}"]
+    end
   end
 
   def get_type(schema), do: Enum.find(schema, &Map.has_key?(@type_2_is_type_fun, &1))
@@ -51,6 +48,7 @@ defmodule Ve.Validator.Generic do
   defp validate_nullable(messages, _, _, _error_message), do: messages
 
   defp validate_in(messages, nil, _, _error_message), do: messages
+
   defp validate_in(messages, schema, _, _) when not is_list(schema), do: messages ++ ["in_should_be_a_list"]
 
   defp validate_in(messages, schema, data, error_message) do

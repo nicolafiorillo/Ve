@@ -49,6 +49,7 @@ defmodule Ve.Validator.Specific do
   end
 
   defp validate_min(messages, nil, _, _error_message), do: messages
+
   defp validate_min(messages, min_value, data, _error_message) when is_number(data) and min_value <= data, do: messages
 
   defp validate_min(messages, min_value, data, _error_message) when is_list(data) and min_value <= length(data),
@@ -58,6 +59,7 @@ defmodule Ve.Validator.Specific do
     do: messages ++ [Utils.message_or_default(error_message, "min_violation")]
 
   defp validate_max(messages, nil, _, _error_message), do: messages
+
   defp validate_max(messages, max_value, data, _error_message) when is_number(data) and max_value >= data, do: messages
 
   defp validate_max(messages, max_value, data, _error_message) when is_list(data) and max_value >= length(data),
@@ -89,7 +91,7 @@ defmodule Ve.Validator.Specific do
         {false, true, _, _} -> messages
         {true, _, false, nil} -> messages ++ [Utils.message_or_default(error_message, "field_#{field}_not_nullable")]
         {true, _, true, nil} -> messages
-        {_, _, _, data} -> Ve.validation_messages(messages, data, schema)
+        _ -> Ve.validation_messages(messages, field_value, schema)
       end
     end)
   end
