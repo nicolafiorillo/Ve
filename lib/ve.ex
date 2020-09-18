@@ -1,9 +1,6 @@
 defmodule Ve do
-  @moduledoc false
-
   alias Ve.Validator
 
-  @doc false
   def validate(data, schema) when is_list(schema) do
     []
     |> validation_messages(data, schema)
