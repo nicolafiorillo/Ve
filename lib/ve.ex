@@ -22,7 +22,10 @@ defmodule Ve do
   def validate(data, schema) when is_list(schema) do
     []
     |> internal_validate(data, schema)
-    |> result(data)
+    |> case do
+       [] -> {:ok, data}
+       messages -> {:error, messages}
+    end
   end
 
   defp internal_validate(messages, data, schema) do
@@ -216,9 +219,6 @@ defmodule Ve do
 
   defp validate_not_empty_string(messages, "", error_message), do: messages ++ [message_or_default(error_message, "string_cannot_be_empty")]
   defp validate_not_empty_string(messages, _, _error_message), do: messages
-
-  defp result([], data), do: {:ok, data}
-  defp result(messages, _), do: {:error, messages}
 
   defp get_type(schema), do: Enum.find(schema, &(Map.has_key?(@type_2_is_type_fun, &1)))
 end
