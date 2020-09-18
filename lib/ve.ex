@@ -213,8 +213,8 @@ defmodule Ve do
 
   defp get_type(schema), do: Enum.find(schema, &(Map.has_key?(@type_2_is_type_fun, &1)))
 
-  defp validate_data_type(nil, _, _), do: []
   defp validate_data_type(_, nil, _), do: ["unknown_type"]
+  defp validate_data_type(nil, _, _), do: []
 
   defp validate_data_type(data, type, is_type_fun) do
     if is_type_fun.(data) do
