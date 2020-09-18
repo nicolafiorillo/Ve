@@ -1,7 +1,7 @@
 defmodule Ve do
   alias Ve.Validator
 
-  def validate(data, schema) when is_list(schema) do
+  def validate(data, schema) do
     []
     |> validation_messages(data, schema)
     |> case do
