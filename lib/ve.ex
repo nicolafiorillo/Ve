@@ -100,7 +100,16 @@ defmodule Ve do
 
   defp validate_type(messages, type, data, _error_message) do
     is_type_fun = Map.get(@type_2_is_type_fun, type)
-    messages ++ validate_data_type(data, type, is_type_fun)
+
+    extra_messages =
+      cond do
+        data == nil -> []
+        type == nil -> ["unknown_type"]
+        is_type_fun.(data) -> []
+        true -> ["#{type}_expected_got_#{Ve.Utils.typeof(data)}"]
+      end
+
+    messages ++ extra_messages
   end
 
   defp validate_min(messages, nil, _, _error_message), do: messages
@@ -212,17 +221,6 @@ defmodule Ve do
   defp result(messages, _), do: {:error, messages}
 
   defp get_type(schema), do: Enum.find(schema, &(Map.has_key?(@type_2_is_type_fun, &1)))
-
-  defp validate_data_type(_, nil, _), do: ["unknown_type"]
-  defp validate_data_type(nil, _, _), do: []
-
-  defp validate_data_type(data, type, is_type_fun) do
-    if is_type_fun.(data) do
-      []
-    else
-      ["#{type}_expected_got_#{Ve.Utils.typeof(data)}"]
-    end
-  end
 end
 
 defmodule Ve.Utils do
