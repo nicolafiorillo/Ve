@@ -23,8 +23,8 @@ defmodule Ve do
     []
     |> internal_validate(data, schema)
     |> case do
-       [] -> {:ok, data}
-       messages -> {:error, messages}
+      [] -> {:ok, data}
+      messages -> {:error, messages}
     end
   end
 
@@ -39,6 +39,7 @@ defmodule Ve do
         messages
         |> validate_generic_type_constraints(data, schema, error_message)
         |> validate_specific_type_constraints(type_value, data, schema, error_message)
+
       error_message ->
         error_message
     end
@@ -68,7 +69,8 @@ defmodule Ve do
     |> validate_string_pattern(pattern_value, data, error_message)
   end
 
-  defp validate_specific_type_constraints(messages, type, data, schema, error_message) when type == :integer or type == :float do
+  defp validate_specific_type_constraints(messages, type, data, schema, error_message)
+       when type == :integer or type == :float do
     min_value = Keyword.get(schema, :min)
     max_value = Keyword.get(schema, :max)
 
@@ -201,7 +203,9 @@ defmodule Ve do
   end
 
   defp validate_of(messages, nil, _, _error_message), do: messages
-  defp validate_of(messages, _, data, error_message) when not is_list(data), do: messages ++ [message_or_default(error_message, "of_is_valid_only_in_list")]
+
+  defp validate_of(messages, _, data, error_message) when not is_list(data),
+    do: messages ++ [message_or_default(error_message, "of_is_valid_only_in_list")]
 
   defp validate_of(messages, schema, data, _error_message) do
     Enum.reduce(data, messages, fn field, messages ->
@@ -209,7 +213,9 @@ defmodule Ve do
     end)
   end
 
-  defp validate_nullable(messages, false, nil, error_message), do: messages ++ [message_or_default(error_message, "cannot_be_nullable")]
+  defp validate_nullable(messages, false, nil, error_message),
+    do: messages ++ [message_or_default(error_message, "cannot_be_nullable")]
+
   defp validate_nullable(messages, _, _, _error_message), do: messages
 
   defp validate_not_empty(messages, true, data, error_message),
@@ -217,10 +223,12 @@ defmodule Ve do
 
   defp validate_not_empty(messages, _, _, _error_message), do: messages
 
-  defp validate_not_empty_string(messages, "", error_message), do: messages ++ [message_or_default(error_message, "string_cannot_be_empty")]
+  defp validate_not_empty_string(messages, "", error_message),
+    do: messages ++ [message_or_default(error_message, "string_cannot_be_empty")]
+
   defp validate_not_empty_string(messages, _, _error_message), do: messages
 
-  defp get_type(schema), do: Enum.find(schema, &(Map.has_key?(@type_2_is_type_fun, &1)))
+  defp get_type(schema), do: Enum.find(schema, &Map.has_key?(@type_2_is_type_fun, &1))
 end
 
 defmodule Ve.Utils do
