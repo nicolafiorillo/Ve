@@ -1,6 +1,15 @@
 defmodule Ve.Validator.Specific do
   alias Ve.Utils
 
+  @type opts_string :: :not_empty | {:pattern, Regex.t()}
+  @type opts_number :: {:min, number()} | {:max, number()}
+  @type opts_fields :: :optional | :nullable | Ve.schema()
+  @type opts_map :: {:fields, [{Map.key(), opts_fields()}]} | {:xor, [{Map.key(), Ve.schema()}]}
+  @type opts_list :: {:min, number()} | {:max, number()} | {:of, Ve.schema()}
+  @type opts :: opts_number() | opts_string() | opts_map() | opts_list()
+  @type schema :: [Ve.Validator.Generic.type() | opts()]
+
+  @spec validate([Ve.message()], Ve.Validator.Generic.type(), Ve.data(), schema(), Ve.message()) :: [Ve.message()]
   def validate(messages, _type, nil, _schema, _error_message) do
     messages
   end

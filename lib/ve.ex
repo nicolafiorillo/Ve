@@ -1,6 +1,12 @@
 defmodule Ve do
   alias Ve.Validator
 
+  @type data :: any()
+  @type message :: String.t()
+  @type schema :: [Ve.Validator.Generic.opts() | Ve.Validator.Specific.opts()]
+  @type result :: {:ok, data()} | {:error, [message()]}
+
+  @spec validate(data(), schema()) :: result()
   def validate(data, schema) do
     []
     |> validation_messages(data, schema)
@@ -10,6 +16,7 @@ defmodule Ve do
     end
   end
 
+  @spec validation_messages([message()], data(), schema()) :: [message()]
   def validation_messages(messages, data, schema) do
     type = Validator.Generic.get_type(schema)
     error_message = Keyword.get(schema, :err_msg)

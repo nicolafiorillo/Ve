@@ -1,6 +1,28 @@
 defmodule Ve.Validator.Generic do
   alias Ve.Utils
 
+  @type data :: any()
+  @type type ::
+          :any
+          | :string
+          | :integer
+          | :atom
+          | :map
+          | :list
+          | :tuple
+          | :boolean
+          | :function
+          | :binary
+          | :float
+          | :pid
+          | :port
+          | :reference
+  @type opt_nullable :: {:nullable, boolean()}
+  @type opt_in :: {:in, [any()]}
+  @type opt_fixed :: {:value, any()}
+  @type opts :: type() | opt_nullable() | opt_in() | opt_fixed()
+  @type schema :: [opts()]
+
   @type_2_is_type_fun %{
     any: &Utils.is_any/1,
     string: &is_binary/1,
@@ -18,6 +40,7 @@ defmodule Ve.Validator.Generic do
     reference: &is_reference/1
   }
 
+  @spec validate([Ve.message()], data(), schema(), Ve.message()) :: [Ve.message()]
   def validate(messages, data, schema, error_message) do
     nullable_value = :nullable in schema
     in_value = Keyword.get(schema, :in)
@@ -29,6 +52,7 @@ defmodule Ve.Validator.Generic do
     |> validate_fixed_value(fixed_value, data, error_message)
   end
 
+  @spec validate_type(type(), data()) :: [Ve.message()]
   def validate_type(type, data) do
     is_type_fun = Map.get(@type_2_is_type_fun, type)
 
@@ -40,6 +64,7 @@ defmodule Ve.Validator.Generic do
     end
   end
 
+  @spec get_type(schema()) :: type()
   def get_type(schema), do: Enum.find(schema, &Map.has_key?(@type_2_is_type_fun, &1))
 
   defp validate_nullable(messages, false, nil, error_message),

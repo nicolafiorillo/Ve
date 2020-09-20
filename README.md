@@ -98,7 +98,7 @@ nil |> Ve.validate([:string, :nullable])
 %{name: "foo", surname: nil} |> Ve.validate([:map, fields: [name: [:string], surname: [:string, :nullable]]])
 {:ok, %{name: "foo", surname: nil}}
 
-%{name: "foo", surname: "foo"} |> Ve.validate([:map, xor_fields: [name: [:string], surname: [:string]]])
+%{name: "foo", surname: "foo"} |> Ve.validate([:map, xor: [name: [:string], surname: [:string]]])
 {:error, ["just_one_field_must_be_present"]}
 ```
 
