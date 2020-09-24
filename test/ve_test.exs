@@ -154,6 +154,11 @@ defmodule VeTest do
       assert Ve.validate(%{name: "f1", surname: nil}, schema) == {:ok, %{name: "f1", surname: nil}}
     end
 
+    test "map contains some non nullable fields" do
+      schema = [:map, fields: [name: [:string], surname: [:string]]]
+      assert Ve.validate(%{name: "f1", surname: nil}, schema) == {:error, ["field_surname_not_nullable"]}
+    end
+
     test "map contains invalid field type" do
       schema = [:map, fields: [name: [:string]]]
       assert Ve.validate(%{name: %{n: "n", s: "s"}}, schema) == {:error, ["string_expected_got_map"]}
@@ -210,6 +215,11 @@ defmodule VeTest do
     test "list contains invalid type" do
       schema = [:list, of: [:string]]
       assert Ve.validate(["a", 1], schema) == {:error, ["string_expected_got_integer"]}
+    end
+
+    test "list contains invalid of" do
+      schema = [:list, of: "string"]
+      assert Ve.validate(["a"], schema) == {:error, ["of_is_valid_only_in_list"]}
     end
 
     test "list contains a valid map" do

@@ -12,6 +12,10 @@ defmodule Ve.Mixfile do
       package: package(),
       source_url: @url,
       start_permanent: Mix.env() == :prod,
+      preferred_cli_env: [
+        coveralls: :test
+      ],
+      test_coverage: [tool: ExCoveralls],
       deps: deps()
     ]
   end
@@ -27,7 +31,7 @@ defmodule Ve.Mixfile do
 
   defp deps do
     [
-      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
+      {:excoveralls, "~> 0.12", only: :test},
       {:dialyxir, "~> 1.0", only: :dev, runtime: false}
     ]
   end

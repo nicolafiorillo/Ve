@@ -126,7 +126,7 @@ defmodule Ve.Validator.Specific do
 
   defp validate_of(messages, nil, _, _error_message), do: messages
 
-  defp validate_of(messages, _, data, error_message) when not is_list(data),
+  defp validate_of(messages, schema, _data, error_message) when not is_list(schema),
     do: messages ++ [Utils.message_or_default(error_message, "of_is_valid_only_in_list")]
 
   defp validate_of(messages, schema, data, _error_message) do
