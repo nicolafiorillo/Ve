@@ -1,7 +1,4 @@
-defmodule Ve.Validator.Generic do
-  alias Ve.Utils
-
-  @type data :: any()
+defmodule Ve.GenericConstraints do
   @type type ::
           :any
           | :string
@@ -23,24 +20,7 @@ defmodule Ve.Validator.Generic do
   @type opts :: type() | opt_nullable() | opt_in() | opt_fixed()
   @type schema :: [opts()]
 
-  @type_2_is_type_fun %{
-    any: &Utils.is_any/1,
-    string: &is_binary/1,
-    integer: &is_integer/1,
-    atom: &is_atom/1,
-    map: &is_map/1,
-    list: &is_list/1,
-    tuple: &is_tuple/1,
-    boolean: &is_boolean/1,
-    function: &is_function/1,
-    binary: &is_binary/1,
-    float: &is_float/1,
-    pid: &is_pid/1,
-    port: &is_port/1,
-    reference: &is_reference/1
-  }
-
-  @spec validate([Ve.message()], data(), schema(), Ve.message()) :: [Ve.message()]
+  @spec validate([Ve.Types.message()], Ve.Types.data(), schema(), Ve.Types.message()) :: [Ve.Types.message()]
   def validate(messages, data, schema, error_message) do
     nullable_value = :nullable in schema
     in_value = Keyword.get(schema, :in)
@@ -52,23 +32,8 @@ defmodule Ve.Validator.Generic do
     |> validate_fixed_value(fixed_value, data, error_message)
   end
 
-  @spec validate_type(type(), data()) :: [Ve.message()]
-  def validate_type(type, data) do
-    is_type_fun = Map.get(@type_2_is_type_fun, type)
-
-    cond do
-      data == nil -> []
-      type == nil -> ["unknown_type"]
-      is_type_fun.(data) -> []
-      true -> ["#{type}_expected_got_#{Utils.typeof(data)}"]
-    end
-  end
-
-  @spec get_type(schema()) :: type()
-  def get_type(schema), do: Enum.find(schema, &Map.has_key?(@type_2_is_type_fun, &1))
-
   defp validate_nullable(messages, false, nil, error_message),
-    do: messages ++ [Utils.message_or_default(error_message, "cannot_be_nullable")]
+    do: messages ++ [Ve.Utils.message_or_default(error_message, "cannot_be_nullable")]
 
   defp validate_nullable(messages, _, _, _error_message), do: messages
 
@@ -80,7 +45,7 @@ defmodule Ve.Validator.Generic do
     if data in schema do
       messages
     else
-      messages ++ [Utils.message_or_default(error_message, "invalid_possible_value")]
+      messages ++ [Ve.Utils.message_or_default(error_message, "invalid_possible_value")]
     end
   end
 
@@ -88,7 +53,7 @@ defmodule Ve.Validator.Generic do
 
   defp validate_fixed_value(messages, value, data, error_message) do
     case value == data do
-      false -> messages ++ [Utils.message_or_default(error_message, "invalid_fixed_value")]
+      false -> messages ++ [Ve.Utils.message_or_default(error_message, "invalid_fixed_value")]
       _ -> messages
     end
   end
