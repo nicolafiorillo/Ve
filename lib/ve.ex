@@ -10,10 +10,8 @@ defmodule Ve do
   def validate(data, schema) do
     []
     |> validation_messages(data, schema)
-    |> case do
-      [] -> {:ok, data}
-      messages -> {:error, messages}
-    end
+    |> on_error()
+    |> on_ok(data)
   end
 
   @spec validation_messages([message()], data(), schema()) :: [message()]
@@ -32,4 +30,10 @@ defmodule Ve do
         type_error_message ++ messages
     end
   end
+
+  defp on_error([]), do: :ok
+  defp on_error(messages), do: {:error, messages}
+
+  defp on_ok(:ok, data), do: {:ok, data}
+  defp on_ok({:error, _} = res, _data), do: res
 end
