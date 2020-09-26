@@ -22,6 +22,37 @@ end
 
 Some trivial examples for usage.
 
+#### Generic constraints (valid for every data type)
+
+```elixir
+# NULLABLE
+"foo" |> Ve.validate([:string, :nullable])
+{:ok, "foo"}
+
+nil |> Ve.validate([:string, :nullable])
+{:ok, "foo"}
+
+# IN a set of possible values
+"foo" |> Ve.validate([:string, in: ["foo", "bar"]])
+{:ok, "foo"}
+
+"xxx" |> Ve.validate([:string, in: ["foo", "bar"]])
+{:error, ["invalid_possible_value"]}
+
+# fixed VALUE
+"bar" |> Ve.validate([:string, value: "bar"])
+{:ok, "bar"}
+
+"foo" |> Ve.validate([:string, value: "bar"])
+{:error, ["invalid_fixed_value"]}
+
+true |> Ve.validate([:boolean, value: true])
+{:ok, true}
+
+false |> Ve.validate([:boolean, value: true])
+{:error, ["invalid_fixed_value"]}
+```
+
 #### Any
 
 ```elixir
@@ -35,28 +66,19 @@ Some trivial examples for usage.
 #### Strings
 
 ```elixir
-"foo" |> Ve.validate([:string])       
+"foo" |> Ve.validate([:string])
 {:ok, "foo"}
 
-"foo" |> Ve.validate([:string, in: ["foo", "bar"]])
-{:ok, "foo"}
-
-"baz" |> Ve.validate([:string, in: ["foo", "bar"]])
-{:error, ["invalid_possible_value"]}
-
-123 |> Ve.validate([:string])  
+123 |> Ve.validate([:string])
 {:error, ["string_expected_got_integer"]}
 
 "my data" |> Ve.validate([:string, pattern: ~r/data/])
 {:ok, "my data"}
 
-nil |> Ve.validate([:string, :nullable])  
-{:ok, nil}
-
 "test" |> Ve.validate([:string, :not_empty])
 {:ok, "test"}
 
-"" |> Ve.validate([:string, :not_empty])    
+"" |> Ve.validate([:string, :not_empty])
 {:error, ["string_cannot_be_empty"]}
 
 "  \t \t" |> Ve.validate([:string, :not_empty])
@@ -66,10 +88,10 @@ nil |> Ve.validate([:string, :nullable])
 #### Integers
 
 ```elixir
-123 |> Ve.validate([:integer])  
+123 |> Ve.validate([:integer])
 {:ok, 123}
 
-123 |> Ve.validate([:integer, min: 120, max: 130]) 
+123 |> Ve.validate([:integer, min: 120, max: 130])
 {:ok, 123}
 ```
 
@@ -79,7 +101,7 @@ nil |> Ve.validate([:string, :nullable])
 ["a"] |> Ve.validate([:list])
 {:ok, ["a"]}
 
-["a"] |> Ve.validate([:list, of: [:string]])   
+["a"] |> Ve.validate([:list, of: [:string]])
 {:ok, ["a"]}
 
 [123, "a"] |> Ve.validate([:list, of: [:integer]])
@@ -98,33 +120,6 @@ nil |> Ve.validate([:string, :nullable])
 %{name: "foo", surname: nil} |> Ve.validate([:map, fields: [name: [:string], surname: [:string, :nullable]]])
 {:ok, %{name: "foo", surname: nil}}
 
-%{name: "foo", surname: "foo"} |> Ve.validate([:map, xor_fields: [name: [:string], surname: [:string]]])
+%{name: "foo", surname: "foo"} |> Ve.validate([:map, xor: [name: [:string], surname: [:string]]])
 {:error, ["just_one_field_must_be_present"]}
-```
-
-#### Fixed value
-```elixir
-56 |> Ve.validate([:integer, value: 56])
-{:ok, 56}
-
-46 |> Ve.validate([:integer, value: 56])
-{:error, ["invalid_fixed_value"]}
-
-true |> Ve.validate([:boolean, value: true])
-{:ok, true}
-
-false |> Ve.validate([:boolean, value: true])
-{:error, ["invalid_fixed_value"]}
-
-"foo" |> Ve.validate([:string, value: "foo"])
-{:ok, "foo"}
-
-"bar" |> Ve.validate([:string, value: "foo"])
-{:error, ["invalid_fixed_value"]}
-```
-
-#### Custom validation error message
-```elixir
-5 |> Ve.validate([:integer, min: 6, err_msg: "value must be minimum 6"])
-{:error, ["value must be minimum 6"]}
 ```

@@ -1,15 +1,21 @@
 defmodule Ve.Mixfile do
   use Mix.Project
 
+  @url "https://github.com/nicolafiorillo/Ve"
+
   def project do
     [
       app: :ve,
-      version: "0.1.11",
+      version: "0.1.2",
       description: "Yet another Elixir data validation engine library.",
       elixir: "~> 1.5",
       package: package(),
-      source_url: "https://github.com/WhitePeaksMobileSoftware/Ve",
-      start_permanent: Mix.env == :prod,
+      source_url: @url,
+      start_permanent: Mix.env() == :prod,
+      preferred_cli_env: [
+        coveralls: :test
+      ],
+      test_coverage: [tool: ExCoveralls],
       deps: deps()
     ]
   end
@@ -19,20 +25,14 @@ defmodule Ve.Mixfile do
       files: ["lib", "mix.exs", "README.md"],
       maintainers: ["Nicola Fiorillo"],
       licenses: ["MIT"],
-      links: %{"GitHub" => "https://github.com/WhitePeaksMobileSoftware/Ve"}    ]
-  end
-
-  # Run "mix help compile.app" to learn about applications.
-  def application do
-    [
-      extra_applications: [:logger]
+      links: %{"GitHub" => @url}
     ]
   end
 
-  # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
+      {:excoveralls, "~> 0.12", only: :test},
+      {:dialyxir, "~> 1.0", only: :dev, runtime: false}
     ]
   end
 end
