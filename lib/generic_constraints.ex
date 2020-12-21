@@ -14,6 +14,7 @@ defmodule Ve.GenericConstraints do
           | :pid
           | :port
           | :reference
+          | :choice
   @type opt_nullable :: {:nullable, boolean()}
   @type opt_in :: {:in, [any()]}
   @type opt_fixed :: {:value, any()}

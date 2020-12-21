@@ -2,10 +2,12 @@ defmodule Ve.Validator do
   @type opts_string :: :not_empty | {:pattern, Regex.t()}
   @type opts_number :: {:min, number()} | {:max, number()}
   @type opts_fields :: :optional | :nullable | Ve.schema()
-  @type opts_map :: {:fields, [{Map.key(), opts_fields()}]} | {:xor, [{Map.key(), Ve.schema()}]}
+  @type opts_map ::
+          {:fields, [{Map.key(), opts_fields()}]} | {:xor, [{Map.key(), Ve.schema()}]} | {:allow_extra_keys, boolean()}
   @type opts_list :: {:min, number()} | {:max, number()} | {:of, Ve.schema()}
-  @type opts_tuple :: {:items, [Ve.schema()]}
-  @type opts :: opts_number() | opts_string() | opts_map() | opts_list() | opts_tuple()
+  @type opts_tuple :: {:of, [Ve.schema()]}
+  @type opts_choice :: {:of, [Ve.schema()]}
+  @type opts :: opts_number() | opts_string() | opts_map() | opts_list() | opts_tuple() | opts_choice()
   @type schema :: [Ve.GenericConstraints.type() | opts()]
 
   @type_2_is_type_fun %{
@@ -67,8 +69,10 @@ defmodule Ve.Validator do
   defp validate(messages, :map, data, schema, error_message) do
     fields_value = Keyword.get(schema, :fields)
     xor_value = Keyword.get(schema, :xor)
+    allow_extra_keys_value = Keyword.get(schema, :allow_extra_keys, true)
 
     messages
+    |> validate_allow_extra_keys(allow_extra_keys_value, fields_value, data, error_message)
     |> validate_fields(fields_value, data, error_message)
     |> validate_xor(xor_value, data, error_message)
   end
@@ -168,6 +172,19 @@ defmodule Ve.Validator do
     case Regex.match?(pattern, data) do
       false -> messages ++ [Ve.Utils.message_or_default(error_message, "pattern_not_matched")]
       _ -> messages
+    end
+  end
+
+  defp validate_allow_extra_keys(messages, true, _, _, _error_message), do: messages
+
+  defp validate_allow_extra_keys(messages, false, fields, data, error_message) do
+    allowed_keys = Keyword.keys(fields)
+    keys = Map.keys(data)
+    extra_keys = keys -- allowed_keys
+
+    case extra_keys do
+      [] -> messages
+      _ -> messages ++ [Ve.Utils.message_or_default(error_message, "unexpected_extra_keys_#{inspect(extra_keys)}")]
     end
   end
 

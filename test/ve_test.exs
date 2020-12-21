@@ -179,6 +179,16 @@ defmodule VeTest do
       schema = [:map, xor: [name: [:string], surname: [:string]]]
       assert Ve.validate(%{name: "n", surname: "k"}, schema) == {:error, ["just_one_field_must_be_present"]}
     end
+
+    test "map extra keys" do
+      schema = [:map, fields: [name: [:string], surname: [:string]], allow_extra_keys: false]
+
+      assert Ve.validate(%{name: "n", surname: "k", extra_key1: "e", extra_key2: "y"}, schema) ==
+               {:error, ["unexpected_extra_keys_[:extra_key1, :extra_key2]"]}
+
+      schema = [:map, fields: [name: [:string], surname: [:string]], allow_extra_keys: false]
+      assert Ve.validate(%{name: "n", surname: "k"}, schema) == {:ok, %{name: "n", surname: "k"}}
+    end
   end
 
   describe "list" do
