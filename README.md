@@ -123,3 +123,10 @@ false |> Ve.validate([:boolean, value: true])
 %{name: "foo", surname: "foo"} |> Ve.validate([:map, xor: [name: [:string], surname: [:string]]])
 {:error, ["just_one_field_must_be_present"]}
 ```
+
+#### Tuple
+
+```elixir
+{"a", 9} |> Ve.validate([:tuple, of: [[:string], [:integer, max: 10]]])
+{:ok, {"a", 9}}
+```

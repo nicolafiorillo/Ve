@@ -6,7 +6,7 @@ defmodule Ve.Mixfile do
   def project do
     [
       app: :ve,
-      version: "0.2.0",
+      version: "0.3.0",
       description: "Yet another Elixir data validation engine library.",
       elixir: "~> 1.5",
       package: package(),
@@ -33,6 +33,7 @@ defmodule Ve.Mixfile do
     [
       {:excoveralls, "~> 0.12", only: :test},
       {:dialyxir, "~> 1.0", only: :dev, runtime: false},
-      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}    ]
+      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
+    ]
   end
 end

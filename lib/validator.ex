@@ -4,7 +4,8 @@ defmodule Ve.Validator do
   @type opts_fields :: :optional | :nullable | Ve.schema()
   @type opts_map :: {:fields, [{Map.key(), opts_fields()}]} | {:xor, [{Map.key(), Ve.schema()}]}
   @type opts_list :: {:min, number()} | {:max, number()} | {:of, Ve.schema()}
-  @type opts :: opts_number() | opts_string() | opts_map() | opts_list()
+  @type opts_tuple :: {:items, [Ve.schema()]}
+  @type opts :: opts_number() | opts_string() | opts_map() | opts_list() | opts_tuple()
   @type schema :: [Ve.GenericConstraints.type() | opts()]
 
   @type_2_is_type_fun %{
@@ -79,11 +80,31 @@ defmodule Ve.Validator do
     messages
     |> validate_min(min_value, data, error_message)
     |> validate_max(max_value, data, error_message)
-    |> validate_of(of_value, data, error_message)
+    |> validate_list_of(of_value, data, error_message)
+  end
+
+  defp validate(messages, :tuple, data, schema, error_message) do
+    of_value = Keyword.get(schema, :of)
+
+    messages
+    |> validate_tuple_of(of_value, data, error_message)
   end
 
   defp validate(messages, _type, _data, _schema, _error_message) do
     messages
+  end
+
+  defp validate_tuple_of(messages, nil, _, _error_message), do: messages
+
+  defp validate_tuple_of(messages, items, data, error_message) when tuple_size(data) != length(items),
+    do: messages ++ [Ve.Utils.message_or_default(error_message, "tuple_size_is_not_#{length(items)}")]
+
+  defp validate_tuple_of(messages, items, data, _error_message) do
+    data = data |> Tuple.to_list()
+
+    Enum.reduce(Enum.zip(items, data), messages, fn {schema, field}, messages ->
+      validation_messages(field, schema, messages)
+    end)
   end
 
   defp validate_type(type, data) do
@@ -164,12 +185,12 @@ defmodule Ve.Validator do
     end
   end
 
-  defp validate_of(messages, nil, _, _error_message), do: messages
+  defp validate_list_of(messages, nil, _, _error_message), do: messages
 
-  defp validate_of(messages, schema, _data, error_message) when not is_list(schema),
+  defp validate_list_of(messages, schema, _data, error_message) when not is_list(schema),
     do: messages ++ [Ve.Utils.message_or_default(error_message, "of_is_valid_only_in_list")]
 
-  defp validate_of(messages, schema, data, _error_message) do
+  defp validate_list_of(messages, schema, data, _error_message) do
     Enum.reduce(data, messages, fn field, messages ->
       validation_messages(field, schema, messages)
     end)
