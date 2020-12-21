@@ -92,7 +92,7 @@ defmodule Ve.Validator do
   end
 
   defp validate(messages, :choice, data, schema, error_message) do
-    of_value = Keyword.get(schema, :of, )
+    of_value = Keyword.get(schema, :of, [])
 
     messages
     |> validate_choice_of(of_value, data, error_message)
@@ -114,8 +114,6 @@ defmodule Ve.Validator do
       validation_messages(field, schema, messages)
     end)
   end
-
-  defp validate_choice_of(messages, nil, _, _error_message), do: messages
 
   defp validate_choice_of(messages, choices, data, error_message) do
     is_valid =
