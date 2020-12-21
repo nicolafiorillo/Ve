@@ -254,4 +254,25 @@ defmodule VeTest do
       assert Ve.validate({"a", 11}, schema) == {:error, ["max_violation"]}
     end
   end
+
+  describe "choice" do
+    test "choice valid" do
+      schema = [:choice, of: [[:string], [:integer]]]
+      assert Ve.validate("a", schema) == {:ok, "a"}
+      assert Ve.validate(1, schema) == {:ok, 1}
+    end
+
+    test "choice invalid" do
+      schema = [:choice, of: [[:string], [:integer]]]
+      assert Ve.validate(true, schema) == {:error, ["invalid_choice"]}
+    end
+
+    test "choice of nothing" do
+      schema = [:choice]
+      assert Ve.validate("a", schema) == {:error, ["invalid_choice"]}
+
+      schema = [:choice, of: []]
+      assert Ve.validate("a", schema) == {:error, ["invalid_choice"]}
+    end
+  end
 end

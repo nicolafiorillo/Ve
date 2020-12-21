@@ -22,7 +22,8 @@ defmodule Ve.Validator do
     float: &is_float/1,
     pid: &is_pid/1,
     port: &is_port/1,
-    reference: &is_reference/1
+    reference: &is_reference/1,
+    choice: &Ve.Utils.is_choice/1
   }
 
   @spec validation_messages(Ve.Types.data(), Ve.schema(), [Ve.Types.message()]) :: [Ve.Types.message()]
@@ -90,6 +91,13 @@ defmodule Ve.Validator do
     |> validate_tuple_of(of_value, data, error_message)
   end
 
+  defp validate(messages, :choice, data, schema, error_message) do
+    of_value = Keyword.get(schema, :of, )
+
+    messages
+    |> validate_choice_of(of_value, data, error_message)
+  end
+
   defp validate(messages, _type, _data, _schema, _error_message) do
     messages
   end
@@ -105,6 +113,24 @@ defmodule Ve.Validator do
     Enum.reduce(Enum.zip(items, data), messages, fn {schema, field}, messages ->
       validation_messages(field, schema, messages)
     end)
+  end
+
+  defp validate_choice_of(messages, nil, _, _error_message), do: messages
+
+  defp validate_choice_of(messages, choices, data, error_message) do
+    is_valid =
+      Enum.any?(
+        choices,
+        fn schema ->
+          validation_messages(data, schema, messages) == []
+        end
+      )
+
+    if is_valid do
+      messages
+    else
+      messages ++ [Ve.Utils.message_or_default(error_message, "invalid_choice")]
+    end
   end
 
   defp validate_type(type, data) do
@@ -206,5 +232,11 @@ defmodule Ve.Validator do
 
   defp validate_not_empty_string(messages, _, _error_message), do: messages
 
-  defp get_type(schema), do: Enum.find(schema, &Map.has_key?(@type_2_is_type_fun, &1))
+  defp get_type(schema) do
+    if :choice in schema do
+      :choice
+    else
+      Enum.find(schema, &Map.has_key?(@type_2_is_type_fun, &1))
+    end
+  end
 end

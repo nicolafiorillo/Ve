@@ -16,6 +16,9 @@ defmodule Ve.Utils do
   @spec is_any(any()) :: true
   def is_any(_), do: true
 
+  @spec is_choice(atom()) :: true
+  def is_choice(_), do: true
+
   @spec message_or_default(Ve.Types.message() | nil, Ve.Types.message()) :: Ve.Types.message()
   def message_or_default(msg, default), do: msg || default
 end
