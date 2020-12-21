@@ -33,6 +33,7 @@ defmodule Ve.Mixfile do
     [
       {:excoveralls, "~> 0.12", only: :test},
       {:dialyxir, "~> 1.0", only: :dev, runtime: false},
-      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}    ]
+      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
+    ]
   end
 end

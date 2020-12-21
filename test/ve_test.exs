@@ -232,4 +232,26 @@ defmodule VeTest do
       assert Ve.validate([%{name: "n"}, %{name: 1}], schema) == {:error, ["string_expected_got_integer"]}
     end
   end
+
+  describe "tuple" do
+    test "tuple empty" do
+      schema = [:tuple, of: []]
+      assert Ve.validate({}, schema) == {:ok, {}}
+    end
+
+    test "tuple invalid size" do
+      schema = [:tuple, of: [[:string]]]
+      assert Ve.validate({"a", "b"}, schema) == {:error, ["tuple_size_is_not_1"]}
+    end
+
+    test "tuple contains valid type" do
+      schema = [:tuple, of: [[:string], [:integer, max: 10]]]
+      assert Ve.validate({"a", 9}, schema) == {:ok, {"a", 9}}
+    end
+
+    test "tuple contains invalid type" do
+      schema = [:tuple, of: [[:string], [:integer, max: 10]]]
+      assert Ve.validate({"a", 11}, schema) == {:error, ["max_violation"]}
+    end
+  end
 end
