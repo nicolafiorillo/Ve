@@ -3,7 +3,7 @@ defmodule Ve.Validator do
   @type opts_number :: {:min, number()} | {:max, number()}
   @type opts_fields :: :optional | :nullable | Ve.schema()
   @type opts_map ::
-          {:fields, [{Map.key(), opts_fields()}]} | {:xor, [{Map.key(), Ve.schema()}]} | {:allow_extra_keys, boolean()}
+          {:fields, [{Map.key(), opts_fields()}]} | {:xor, [{Map.key(), Ve.schema()}]} | {:strict, boolean()}
   @type opts_list :: {:min, number()} | {:max, number()} | {:of, Ve.schema()}
   @type opts_tuple :: {:of, [Ve.schema()]}
   @type opts_choice :: {:of, [Ve.schema()]}
@@ -69,10 +69,10 @@ defmodule Ve.Validator do
   defp validate(messages, :map, data, schema, error_message) do
     fields_value = Keyword.get(schema, :fields)
     xor_value = Keyword.get(schema, :xor)
-    allow_extra_keys_value = Keyword.get(schema, :allow_extra_keys, true)
+    strict_value = Keyword.get(schema, :strict, false)
 
     messages
-    |> validate_allow_extra_keys(allow_extra_keys_value, fields_value, data, error_message)
+    |> validate_strict_keys(strict_value, fields_value, data, error_message)
     |> validate_fields(fields_value, data, error_message)
     |> validate_xor(xor_value, data, error_message)
   end
@@ -175,9 +175,9 @@ defmodule Ve.Validator do
     end
   end
 
-  defp validate_allow_extra_keys(messages, true, _, _, _error_message), do: messages
+  defp validate_strict_keys(messages, false, _, _, _error_message), do: messages
 
-  defp validate_allow_extra_keys(messages, false, fields, data, error_message) do
+  defp validate_strict_keys(messages, true, fields, data, error_message) do
     allowed_keys = Keyword.keys(fields)
     keys = Map.keys(data)
     extra_keys = keys -- allowed_keys
