@@ -179,6 +179,16 @@ defmodule VeTest do
       schema = [:map, xor: [name: [:string], surname: [:string]]]
       assert Ve.validate(%{name: "n", surname: "k"}, schema) == {:error, ["just_one_field_must_be_present"]}
     end
+
+    test "map extra keys" do
+      schema = [:map, fields: [name: [:string], surname: [:string]], strict: true]
+
+      assert Ve.validate(%{name: "n", surname: "k", extra_key1: "e", extra_key2: "y"}, schema) ==
+               {:error, ["unexpected_extra_keys_[:extra_key1, :extra_key2]"]}
+
+      schema = [:map, fields: [name: [:string], surname: [:string]], strict: true]
+      assert Ve.validate(%{name: "n", surname: "k"}, schema) == {:ok, %{name: "n", surname: "k"}}
+    end
   end
 
   describe "list" do
@@ -252,6 +262,27 @@ defmodule VeTest do
     test "tuple contains invalid type" do
       schema = [:tuple, of: [[:string], [:integer, max: 10]]]
       assert Ve.validate({"a", 11}, schema) == {:error, ["max_violation"]}
+    end
+  end
+
+  describe "choice" do
+    test "choice valid" do
+      schema = [:choice, of: [[:string], [:integer]]]
+      assert Ve.validate("a", schema) == {:ok, "a"}
+      assert Ve.validate(1, schema) == {:ok, 1}
+    end
+
+    test "choice invalid" do
+      schema = [:choice, of: [[:string], [:integer]]]
+      assert Ve.validate(true, schema) == {:error, ["invalid_choice"]}
+    end
+
+    test "choice of nothing" do
+      schema = [:choice]
+      assert Ve.validate("a", schema) == {:error, ["invalid_choice"]}
+
+      schema = [:choice, of: []]
+      assert Ve.validate("a", schema) == {:error, ["invalid_choice"]}
     end
   end
 end

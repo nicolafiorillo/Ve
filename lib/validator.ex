@@ -2,10 +2,12 @@ defmodule Ve.Validator do
   @type opts_string :: :not_empty | {:pattern, Regex.t()}
   @type opts_number :: {:min, number()} | {:max, number()}
   @type opts_fields :: :optional | :nullable | Ve.schema()
-  @type opts_map :: {:fields, [{Map.key(), opts_fields()}]} | {:xor, [{Map.key(), Ve.schema()}]}
+  @type opts_map ::
+          {:fields, [{Map.key(), opts_fields()}]} | {:xor, [{Map.key(), Ve.schema()}]} | {:strict, boolean()}
   @type opts_list :: {:min, number()} | {:max, number()} | {:of, Ve.schema()}
-  @type opts_tuple :: {:items, [Ve.schema()]}
-  @type opts :: opts_number() | opts_string() | opts_map() | opts_list() | opts_tuple()
+  @type opts_tuple :: {:of, [Ve.schema()]}
+  @type opts_choice :: {:of, [Ve.schema()]}
+  @type opts :: opts_number() | opts_string() | opts_map() | opts_list() | opts_tuple() | opts_choice()
   @type schema :: [Ve.GenericConstraints.type() | opts()]
 
   @type_2_is_type_fun %{
@@ -22,7 +24,8 @@ defmodule Ve.Validator do
     float: &is_float/1,
     pid: &is_pid/1,
     port: &is_port/1,
-    reference: &is_reference/1
+    reference: &is_reference/1,
+    choice: &Ve.Utils.is_choice/1
   }
 
   @spec validation_messages(Ve.Types.data(), Ve.schema(), [Ve.Types.message()]) :: [Ve.Types.message()]
@@ -66,8 +69,10 @@ defmodule Ve.Validator do
   defp validate(messages, :map, data, schema, error_message) do
     fields_value = Keyword.get(schema, :fields)
     xor_value = Keyword.get(schema, :xor)
+    strict_value = Keyword.get(schema, :strict, false)
 
     messages
+    |> validate_strict_keys(strict_value, fields_value, data, error_message)
     |> validate_fields(fields_value, data, error_message)
     |> validate_xor(xor_value, data, error_message)
   end
@@ -90,6 +95,13 @@ defmodule Ve.Validator do
     |> validate_tuple_of(of_value, data, error_message)
   end
 
+  defp validate(messages, :choice, data, schema, error_message) do
+    of_value = Keyword.get(schema, :of, [])
+
+    messages
+    |> validate_choice_of(of_value, data, error_message)
+  end
+
   defp validate(messages, _type, _data, _schema, _error_message) do
     messages
   end
@@ -105,6 +117,22 @@ defmodule Ve.Validator do
     Enum.reduce(Enum.zip(items, data), messages, fn {schema, field}, messages ->
       validation_messages(field, schema, messages)
     end)
+  end
+
+  defp validate_choice_of(messages, choices, data, error_message) do
+    is_valid =
+      Enum.any?(
+        choices,
+        fn schema ->
+          validation_messages(data, schema, messages) == []
+        end
+      )
+
+    if is_valid do
+      messages
+    else
+      messages ++ [Ve.Utils.message_or_default(error_message, "invalid_choice")]
+    end
   end
 
   defp validate_type(type, data) do
@@ -144,6 +172,19 @@ defmodule Ve.Validator do
     case Regex.match?(pattern, data) do
       false -> messages ++ [Ve.Utils.message_or_default(error_message, "pattern_not_matched")]
       _ -> messages
+    end
+  end
+
+  defp validate_strict_keys(messages, false, _, _, _error_message), do: messages
+
+  defp validate_strict_keys(messages, true, fields, data, error_message) do
+    allowed_keys = Keyword.keys(fields)
+    keys = Map.keys(data)
+    extra_keys = keys -- allowed_keys
+
+    case extra_keys do
+      [] -> messages
+      _ -> messages ++ [Ve.Utils.message_or_default(error_message, "unexpected_extra_keys_#{inspect(extra_keys)}")]
     end
   end
 
@@ -206,5 +247,11 @@ defmodule Ve.Validator do
 
   defp validate_not_empty_string(messages, _, _error_message), do: messages
 
-  defp get_type(schema), do: Enum.find(schema, &Map.has_key?(@type_2_is_type_fun, &1))
+  defp get_type(schema) do
+    if :choice in schema do
+      :choice
+    else
+      Enum.find(schema, &Map.has_key?(@type_2_is_type_fun, &1))
+    end
+  end
 end
