@@ -1,4 +1,6 @@
 defmodule Ve.Validator do
+  @moduledoc false
+
   @type opts_string :: :not_empty | {:pattern, Regex.t()}
   @type opts_number :: {:min, number()} | {:max, number()}
   @type opts_fields :: :optional | :nullable | Ve.schema()

@@ -1,4 +1,6 @@
 defmodule Ve.Utils do
+  @moduledoc false
+
   @spec typeof(any()) :: String.t()
   def typeof(x) when is_bitstring(x), do: "bitstring"
   def typeof(x) when is_integer(x), do: "integer"

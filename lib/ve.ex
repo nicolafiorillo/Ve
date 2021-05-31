@@ -1,4 +1,6 @@
 defmodule Ve do
+  @moduledoc false
+
   @type schema :: [Ve.Validator.opts()]
   @type result :: {:ok, Ve.Types.data()} | {:error, [Ve.Types.message()]}
 

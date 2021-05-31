@@ -1,4 +1,6 @@
 defmodule Ve.GenericConstraints do
+  @moduledoc false
+
   @type type ::
           :any
           | :string
